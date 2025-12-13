@@ -1,0 +1,4 @@
+github.com/go-chi/chi v1.5.5 h1:vOB/HbEMt9QqBqErz07QehcOKHaWFtuj87tTDVz2qXE=
+github.com/go-chi/chi v1.5.5/go.mod h1:C9JqLr3tIYjDOZpzn+BCuxY8z8vmca43EeMgyZt7irw=
+github.com/racingmars/go3270 v0.9.11 h1:ZAjsslhXlRJhl6yH5Ol4udlxZKpAd4zNjURnJEagh5w=
+github.com/racingmars/go3270 v0.9.11/go.mod h1:JCzKbsCGdevsd+2iLMRw3Cd+Wk7vmBeGlnfHmeJEcsU=
