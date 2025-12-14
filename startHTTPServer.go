@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
+	"gorm.io/gorm"
 )
 
-func startHTTPServer() {
+func startHTTPServer(db *gorm.DB) {
 	r := chi.NewRouter()
 
 	// TODO complete

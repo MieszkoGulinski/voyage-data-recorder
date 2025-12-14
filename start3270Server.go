@@ -6,9 +6,10 @@ import (
 	"net"
 
 	"github.com/racingmars/go3270"
+	"gorm.io/gorm"
 )
 
-func onConnect3270(conn net.Conn) {
+func onConnect3270(conn net.Conn, db *gorm.DB) {
 	defer conn.Close()
 	devinfo, err := go3270.NegotiateTelnet(conn)
 	if err != nil {
@@ -21,12 +22,11 @@ func onConnect3270(conn net.Conn) {
 
 	// Main loop
 	currentScreenId := 0
-	screensCount := 2
+	screensCount := len(screenTitles)
 	var historyStack []int64
 
-
 	for {
-		screenContent, lastTimestamp, nextPageExists, err := getLogger3270ScreenContent(currentScreenId, historyStack)
+		screenContent, lastTimestamp, nextPageExists, err := getLogger3270ScreenContent(currentScreenId, historyStack, db)
 		if err != nil {
 			log.Println(err)
 			return
@@ -66,7 +66,7 @@ func onConnect3270(conn net.Conn) {
 	}
 }
 
-func start3270Server() {
+func start3270Server(db *gorm.DB) {
 	ln, err := net.Listen("tcp", ":3270")
 	if err != nil {
 		log.Fatal(err)
@@ -77,6 +77,6 @@ func start3270Server() {
 			log.Println(err)
 			continue
 		}
-		go onConnect3270(conn)
+		go onConnect3270(conn, db)
 	}
 }
