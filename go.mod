@@ -1,4 +1,4 @@
-module datalogger-viewer
+module datalogger
 
 go 1.25.5
 

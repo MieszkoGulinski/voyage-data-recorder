@@ -1,24 +1,27 @@
 package main
 
 import (
+	"datalogger/database"
+	"datalogger/viewer3270"
+	"datalogger/viewerhttp"
 	"fmt"
 	"sync"
 )
 
 func main() {
-	db := createDatabaseConnection()
+	db := database.CreateDatabaseReaderConnection()
 
 	var wg sync.WaitGroup
 	wg.Add(2)
 
   go func(){
 		defer wg.Done()
-		start3270Server(db)
+		viewer3270.Start3270Server(db)
 	}()
 
 	go func(){
 		defer wg.Done()
-		startHTTPServer(db)
+		viewerhttp.StartHTTPServer(db)
 	}()
 
 	fmt.Println("Servers listening - press Ctrl+C to stop")

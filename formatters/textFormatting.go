@@ -1,4 +1,4 @@
-package main
+package formatters
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-func formatUnixTimestamp(timestamp int64) string {
+func FormatUnixTimestamp(timestamp int64) string {
 	t := time.Unix(timestamp, 0).UTC()
 	return t.Format("2006-01-02 15:04:05")
 }
 
-func formatLatitude(ptr *float64) string {
+func FormatLatitude(ptr *float64) string {
 	if ptr == nil {
 		return "----"
 	}
@@ -30,7 +30,7 @@ func formatLatitude(ptr *float64) string {
 	return fmt.Sprintf("%d %05.2f %s", degrees, minutes, hemisphere)
 }
 
-func formatLongitude(ptr *float64) string {
+func FormatLongitude(ptr *float64) string {
 	if ptr == nil {
 		return "----"
 	}
@@ -53,7 +53,7 @@ type Numeric interface {
 	~int | ~int64 | ~uint8 | ~uint16 | ~float64
 }
 
-func formatNumber[T Numeric](template string, ptr *T) string {
+func FormatNumber[T Numeric](template string, ptr *T) string {
 	if ptr == nil {
 		return "----"
 	}

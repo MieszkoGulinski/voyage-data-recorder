@@ -1,11 +1,4 @@
-package main
-
-import (
-	"log"
-
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-)
+package database
 
 // Add tables structure here
 
@@ -71,52 +64,3 @@ func (r Battery) GetTimestamp() int64 {
 }
 
 // More tables will come: GPS accuracy/status, electric motor status etc
-
-func createDatabaseConnection() *gorm.DB {
-	dsn := "file:db.sqlite?mode=ro&_journal_mode=WAL&immutable=1"
-	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
-}
-
-
-// Reusable helper
-
-type WithTimestamp interface {
-	GetTimestamp() int64
-}
-
-func queryWithPagination[T WithTimestamp](
-	db *gorm.DB,
-	model *T,
-	lastTimestamp int64,
-	limit int,
-) (
-	result []T,
-	newLastTimestamp int64,
-	nextPageExists bool,
-	err error,
-) {
-
-	query := db.Model(model)
-
-	if lastTimestamp != 0 {
-		query = query.Where("timestamp < ?", lastTimestamp)
-	}
-
-	err = query.
-		Order("timestamp DESC").
-		Limit(limit).
-		Find(&result).
-		Error
-
-	nextPageExists = len(result) == limit
-	
-	if (len(result) > 0) {
-		newLastTimestamp = result[len(result)-1].GetTimestamp()
-	}
-
-	return
-}

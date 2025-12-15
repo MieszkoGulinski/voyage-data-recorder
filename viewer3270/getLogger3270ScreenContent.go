@@ -1,6 +1,9 @@
-package main
+package viewer3270
 
 import (
+	"datalogger/database"
+	"datalogger/formatters"
+
 	"fmt"
 	"log"
 
@@ -22,7 +25,7 @@ func renderPositionScreen(lastTimestamp int64, db *gorm.DB) (
 	nextPageExists bool,
 	err error,
 ){
-	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Position{}, lastTimestamp, 20)
+	result, newLastTimestamp, nextPageExists, err := database.QueryWithPagination(db, &database.Position{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
 		{Row: 0, Col: 0, Content: "Positions", Intense: true},
@@ -38,13 +41,13 @@ func renderPositionScreen(lastTimestamp int64, db *gorm.DB) (
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
-			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
-			go3270.Field{Row: i+2, Col: 22, Content: formatLatitude(v.Latitude)},
-			go3270.Field{Row: i+2, Col: 35, Content: formatLongitude(v.Longitude)},
-			go3270.Field{Row: i+2, Col: 48, Content: formatNumber("%4.1f", v.SpeedOverGround)},
-			go3270.Field{Row: i+2, Col: 55, Content: formatNumber("%05.1f", v.CourseOverGround)},
-			go3270.Field{Row: i+2, Col: 63, Content: formatNumber("%05.1f", v.SpeedOverWater)},
-			go3270.Field{Row: i+2, Col: 73, Content: formatNumber("%05.1f", v.MagneticBearing)},
+			go3270.Field{Row: i+2, Col: 0, Content: formatters.FormatUnixTimestamp(v.Timestamp)},
+			go3270.Field{Row: i+2, Col: 22, Content: formatters.FormatLatitude(v.Latitude)},
+			go3270.Field{Row: i+2, Col: 35, Content: formatters.FormatLongitude(v.Longitude)},
+			go3270.Field{Row: i+2, Col: 48, Content: formatters.FormatNumber("%4.1f", v.SpeedOverGround)},
+			go3270.Field{Row: i+2, Col: 55, Content: formatters.FormatNumber("%05.1f", v.CourseOverGround)},
+			go3270.Field{Row: i+2, Col: 63, Content: formatters.FormatNumber("%05.1f", v.SpeedOverWater)},
+			go3270.Field{Row: i+2, Col: 73, Content: formatters.FormatNumber("%05.1f", v.MagneticBearing)},
 		)
 	}
 
@@ -57,7 +60,7 @@ func renderWeatherScreen(lastTimestamp int64, db *gorm.DB) (
 	nextPageExists bool,
 	err error,
 ){
-	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Weather{}, lastTimestamp, 20)
+	result, newLastTimestamp, nextPageExists, err := database.QueryWithPagination(db, &database.Weather{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
 		{Row: 0, Col: 0, Content: "Weather", Intense: true},
@@ -74,12 +77,12 @@ func renderWeatherScreen(lastTimestamp int64, db *gorm.DB) (
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
-			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
-			go3270.Field{Row: i+2, Col: 23, Content: formatNumber("%5.1f", v.AirTemperature)},
-			go3270.Field{Row: i+2, Col: 28, Content: formatNumber("%5.1f", v.WaterTemperature)},
-			go3270.Field{Row: i+2, Col: 33, Content: formatNumber("%4.0f", v.Pressure)},
-			go3270.Field{Row: i+2, Col: 38, Content: formatNumber("%5.1f", v.WindSpeed)},
-			go3270.Field{Row: i+2, Col: 43, Content: formatNumber("%5.1f", v.AirTemperature)},
+			go3270.Field{Row: i+2, Col: 0, Content: formatters.FormatUnixTimestamp(v.Timestamp)},
+			go3270.Field{Row: i+2, Col: 23, Content: formatters.FormatNumber("%5.1f", v.AirTemperature)},
+			go3270.Field{Row: i+2, Col: 28, Content: formatters.FormatNumber("%5.1f", v.WaterTemperature)},
+			go3270.Field{Row: i+2, Col: 33, Content: formatters.FormatNumber("%4.0f", v.Pressure)},
+			go3270.Field{Row: i+2, Col: 38, Content: formatters.FormatNumber("%5.1f", v.WindSpeed)},
+			go3270.Field{Row: i+2, Col: 43, Content: formatters.FormatNumber("%5.1f", v.AirTemperature)},
 		)
 	}
 
@@ -92,7 +95,7 @@ func renderBatteryScreen(lastTimestamp int64, db *gorm.DB) (
 	nextPageExists bool,
 	err error,
 ){
-	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Battery{}, lastTimestamp, 20)
+	result, newLastTimestamp, nextPageExists, err := database.QueryWithPagination(db, &database.Battery{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
 		{Row: 0, Col: 0, Content: "Battery", Intense: true},
@@ -105,7 +108,7 @@ func renderBatteryScreen(lastTimestamp int64, db *gorm.DB) (
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
-			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
+			go3270.Field{Row: i+2, Col: 0, Content: formatters.FormatUnixTimestamp(v.Timestamp)},
 			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%3d", v.Percent)},
 			go3270.Field{Row: i+2, Col: 28, Content: fmt.Sprintf("%5.1f", v.ChangeRate)},
 		)

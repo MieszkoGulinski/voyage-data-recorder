@@ -1,4 +1,4 @@
-package main
+package viewer3270
 
 import (
 	"fmt"
@@ -66,7 +66,7 @@ func onConnect3270(conn net.Conn, db *gorm.DB) {
 	}
 }
 
-func start3270Server(db *gorm.DB) {
+func Start3270Server(db *gorm.DB) {
 	ln, err := net.Listen("tcp", ":3270")
 	if err != nil {
 		log.Fatal(err)

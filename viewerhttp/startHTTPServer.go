@@ -1,6 +1,7 @@
-package main
+package viewerhttp
 
 import (
+	"datalogger/database"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -9,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func generateApiListHandler[T WithTimestamp](db *gorm.DB,
+func generateApiListHandler[T database.WithTimestamp](db *gorm.DB,
 	model *T,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +23,7 @@ func generateApiListHandler[T WithTimestamp](db *gorm.DB,
 			}
 		}
 
-		rows, _, _, err := queryWithPagination(db, model, lastTimestamp, 100)
+		rows, _, _, err := database.QueryWithPagination(db, model, lastTimestamp, 100)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -35,13 +36,13 @@ func generateApiListHandler[T WithTimestamp](db *gorm.DB,
 	}
 }
 
-func startHTTPServer(db *gorm.DB) {
+func StartHTTPServer(db *gorm.DB) {
 	r := chi.NewRouter()
 
 	// TODO write HTML renderer
-	r.Get("/api/weather", generateApiListHandler(db, &Weather{}))
-	r.Get("/api/positions", generateApiListHandler(db, &Position{}))
-	r.Get("/api/battery",  generateApiListHandler(db, &Battery{}))
+	r.Get("/api/weather", generateApiListHandler(db, &database.Weather{}))
+	r.Get("/api/positions", generateApiListHandler(db, &database.Position{}))
+	r.Get("/api/battery",  generateApiListHandler(db, &database.Battery{}))
 
 	http.ListenAndServe(":8080", r)
 }
