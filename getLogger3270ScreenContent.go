@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/racingmars/go3270"
 	"gorm.io/gorm"
@@ -13,11 +12,6 @@ var screenTitles = []string{
 	"Position",
 	"Weather",
 	"Battery status",
-}
-
-func formatUnixTimestamp(timestamp int64) string {
-	t := time.Unix(timestamp, 0).UTC()
-	return t.Format("2006-01-02 15:04:05")
 }
 
 // Individual formatters by table
@@ -31,21 +25,26 @@ func renderPositionScreen(lastTimestamp int64, db *gorm.DB) (
 	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Position{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
-		{Row: 0, Col: 0, Content: "Positions"},
+		{Row: 0, Col: 0, Content: "Positions", Intense: true},
 		// Header
 		{Row: 1, Col: 0, Content: "Time UTC"},
-		{Row: 1, Col: 23, Content: "V kt"},
-		{Row: 1, Col: 32, Content: "Dir"},
-		{Row: 1, Col: 42, Content: "Mag.bear."},
+		{Row: 1, Col: 22, Content: "Lat"},
+		{Row: 1, Col: 35, Content: "Lon"},
+		{Row: 1, Col: 48, Content: "V kt"},
+		{Row: 1, Col: 55, Content: "  Dir"},
+		{Row: 1, Col: 63, Content: "Mag.b."},
 	}
 
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
 			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
-			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%5.1f", v.Speed)},
-			go3270.Field{Row: i+2, Col: 32, Content: fmt.Sprintf("%5.1f", v.Direction)},
-			go3270.Field{Row: i+2, Col: 42, Content: fmt.Sprintf("%5.1f", v.MagBearing)},
+			go3270.Field{Row: i+2, Col: 22, Content: formatLatitude(v.Latitude)},
+			go3270.Field{Row: i+2, Col: 35, Content: formatLongitude(v.Longitude)},
+			go3270.Field{Row: i+2, Col: 48, Content: formatNumber("%4.1f", v.SpeedOverGround)},
+			go3270.Field{Row: i+2, Col: 55, Content: formatNumber("%05.1f", v.CourseOverGround)},
+			go3270.Field{Row: i+2, Col: 63, Content: formatNumber("%05.1f", v.SpeedOverWater)},
+			go3270.Field{Row: i+2, Col: 73, Content: formatNumber("%05.1f", v.MagneticBearing)},
 		)
 	}
 
@@ -61,17 +60,26 @@ func renderWeatherScreen(lastTimestamp int64, db *gorm.DB) (
 	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Weather{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
-		{Row: 0, Col: 0, Content: "Weather"},
+		{Row: 0, Col: 0, Content: "Weather", Intense: true},
 		// Header
 		{Row: 1, Col: 0, Content: "Time UTC"},
-		// ...
+		{Row: 1, Col: 23, Content: "Air C"},
+		{Row: 1, Col: 28, Content: "Wat C"},
+		{Row: 1, Col: 33, Content: "P hPa"},
+		{Row: 1, Col: 38, Content: "Sun"},
+		{Row: 1, Col: 43, Content: "W m/s"},
+		{Row: 1, Col: 48, Content: "W dir"},
 	}
 
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
 			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
-			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%5.1f", v.AirTemperature)},
+			go3270.Field{Row: i+2, Col: 23, Content: formatNumber("%5.1f", v.AirTemperature)},
+			go3270.Field{Row: i+2, Col: 28, Content: formatNumber("%5.1f", v.WaterTemperature)},
+			go3270.Field{Row: i+2, Col: 33, Content: formatNumber("%4.0f", v.Pressure)},
+			go3270.Field{Row: i+2, Col: 38, Content: formatNumber("%5.1f", v.WindSpeed)},
+			go3270.Field{Row: i+2, Col: 43, Content: formatNumber("%5.1f", v.AirTemperature)},
 		)
 	}
 
@@ -87,10 +95,11 @@ func renderBatteryScreen(lastTimestamp int64, db *gorm.DB) (
 	result, newLastTimestamp, nextPageExists, err := queryWithPagination(db, &Battery{}, lastTimestamp, 20)
 
 	screenContent = go3270.Screen{
-		{Row: 0, Col: 0, Content: "Battery"},
+		{Row: 0, Col: 0, Content: "Battery", Intense: true},
 		// Header
 		{Row: 1, Col: 0, Content: "Time UTC"},
-		// ...
+		{Row: 1, Col: 23, Content: "%"},
+		{Row: 1, Col: 28, Content: "%/hr"},
 	}
 
 	for i, v := range result {
@@ -98,6 +107,7 @@ func renderBatteryScreen(lastTimestamp int64, db *gorm.DB) (
 			screenContent,
 			go3270.Field{Row: i+2, Col: 0, Content: formatUnixTimestamp(v.Timestamp)},
 			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%3d", v.Percent)},
+			go3270.Field{Row: i+2, Col: 28, Content: fmt.Sprintf("%5.1f", v.ChangeRate)},
 		)
 	}
 
@@ -132,7 +142,7 @@ func getLogger3270ScreenContent (
 
 	// Default size is 80x24 characters - TODO handle more screen sizes if available
 	screenContent = append(screenContent,
-		go3270.Field{Row: 23, Col: 0, Content: "F3 close F7 page up F8 page down F9 next table F10 prev table"},
+		go3270.Field{Row: 23, Col: 0, Content: "F3 close F7 page up F8 page down F9 next table F10 prev table", Color: go3270.Green},
 	)
 
 	return
