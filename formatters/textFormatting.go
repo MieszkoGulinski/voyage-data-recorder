@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/racingmars/go3270"
 )
 
 func FormatUnixTimestamp(timestamp int64) string {
@@ -58,4 +60,27 @@ func FormatNumber[T Numeric](template string, ptr *T) string {
 		return "----"
 	}
 	return fmt.Sprintf(template, *ptr)
+}
+
+func Format3270Color[T Numeric](ptr *T) go3270.Color {
+	if ptr == nil {
+		// Data is null - it means that a sensor failed, for this reason we display red
+		return go3270.Red
+	}
+
+	return go3270.DefaultColor
+}
+
+func Format3270ColorWarningDanger(ptr *float64, warningThreshold float64, dangerThreshold float64) go3270.Color {
+	if ptr == nil {
+		return go3270.Red
+	}
+	if *ptr > dangerThreshold {
+		return go3270.Red
+	}
+	if *ptr > warningThreshold {
+		return go3270.Yellow
+	}
+
+	return go3270.DefaultColor
 }
