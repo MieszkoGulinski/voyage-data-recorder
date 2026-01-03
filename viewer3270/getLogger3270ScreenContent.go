@@ -71,7 +71,7 @@ func renderWeatherScreen(lastTimestamp int64, db *gorm.DB) (
 		{Row: 1, Col: 28, Content: "Wat C"},
 		{Row: 1, Col: 33, Content: "P hPa"},
 		{Row: 1, Col: 38, Content: "Sun"},
-		{Row: 1, Col: 43, Content: "W m/s"},
+		{Row: 1, Col: 43, Content: "W kt"},
 		{Row: 1, Col: 48, Content: "W dir"},
 	}
 
@@ -82,8 +82,8 @@ func renderWeatherScreen(lastTimestamp int64, db *gorm.DB) (
 			go3270.Field{Row: i+2, Col: 23, Content: formatters.FormatNumber("%5.1f", v.AirTemperature), Color: formatters.Format3270Color(v.AirTemperature)},
 			go3270.Field{Row: i+2, Col: 28, Content: formatters.FormatNumber("%5.1f", v.WaterTemperature), Color: formatters.Format3270Color(v.WaterTemperature)},
 			go3270.Field{Row: i+2, Col: 33, Content: formatters.FormatNumber("%4.0f", v.Pressure), Color: formatters.Format3270Color(v.Pressure)},
-			go3270.Field{Row: i+2, Col: 38, Content: formatters.FormatNumber("%5.1f", v.WindSpeed), Color: formatters.Format3270Color(v.WindSpeed)},
-			go3270.Field{Row: i+2, Col: 43, Content: formatters.FormatNumber("%5.1f", v.AirTemperature), Color: formatters.Format3270Color(v.AirTemperature)},
+			go3270.Field{Row: i+2, Col: 38, Content: formatters.FormatNumber("%5.1f", v.ApparentWindSpeed), Color: formatters.Format3270Color(v.ApparentWindSpeed)},
+			go3270.Field{Row: i+2, Col: 43, Content: formatters.FormatWindDirection(v.ApparentWindDirection), Color: formatters.Format3270Color(v.AirTemperature)},
 		)
 	}
 
@@ -103,15 +103,15 @@ func renderBatteryScreen(lastTimestamp int64, db *gorm.DB) (
 		// Header
 		{Row: 1, Col: 0, Content: "Time UTC"},
 		{Row: 1, Col: 23, Content: "%"},
-		{Row: 1, Col: 28, Content: "%/hr"},
+		{Row: 1, Col: 28, Content: "V"},
 	}
 
 	for i, v := range result {
 		screenContent = append(
 			screenContent,
 			go3270.Field{Row: i+2, Col: 0, Content: formatters.FormatUnixTimestamp(v.Timestamp), Color: go3270.White},
-			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%3d", v.Percent)},
-			go3270.Field{Row: i+2, Col: 28, Content: fmt.Sprintf("%5.1f", v.ChangeRate)},
+			go3270.Field{Row: i+2, Col: 23, Content: fmt.Sprintf("%3d", v.Charge)},
+			go3270.Field{Row: i+2, Col: 28, Content: fmt.Sprintf("%5.1f", v.Voltage)},
 		)
 	}
 

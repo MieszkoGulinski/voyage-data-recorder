@@ -84,3 +84,18 @@ func Format3270ColorWarningDanger(ptr *float64, warningThreshold float64, danger
 
 	return go3270.DefaultColor
 }
+
+// [...] creates an array - arrays have always fixed size
+var directions = [...]string{
+    "N", "NbE", "NNE", "NEbN", "NE", "NEbE", "ENE", "EbN",
+    "E", "EbS", "ESE", "SEbE", "SE", "SEbS", "SSE", "SbE",
+    "S", "SbW", "SSW", "SWbS", "SW", "SWbW", "WSW", "WbS",
+    "W", "WbN", "WNW", "NWbW", "NW", "NWbN", "NNW", "NbW",
+}
+
+func FormatWindDirection(ptr *uint8) string {
+	if ptr == nil {
+		return "----"
+	}
+	return directions[*ptr % 32]
+}

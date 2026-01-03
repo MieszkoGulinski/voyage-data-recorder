@@ -13,13 +13,12 @@ type Weather struct {
 	AirTemperature        *float64 `gorm:"column:air_temperature_c" json:"airTemperature"`
 	WaterTemperature      *float64 `gorm:"column:water_temperature_c" json:"waterTemperature"`
 	Pressure              *float64 `gorm:"column:pressure_hpa" json:"pressure"`
-	Sunlight              *uint16  `gorm:"column:sunlight_lux" json:"sunlight"`
-	ApparentWindDirection *uint16  `gorm:"column:apparent_wind_direction_deg" json:"apparentWindDirection"`
-	ApparentWindSpeeed    *float64 `gorm:"column:apparent_wind_direction_speed_ms" json:"apparentWindSpeed"`
-	WindDirection         *uint16  `gorm:"column:true_wind_direction_deg" json:"trueWindDirection"`
-	WindSpeed             *float64 `gorm:"column:true_wind_speed_ms" json:"trueWindSpeed"`
-	RollAmplitude         *uint8   `gorm:"column:roll_amplitude_deg" json:"rollAmplitude"`
-	PitchAmplitude        *uint8   `gorm:"column:pitch_amplitude_deg" json:"pitchAmplitude"`
+	ApparentWindDirection *uint8   `gorm:"column:apparent_wind_direction_rhumb" json:"apparentWindDirection"`
+	ApparentWindSpeed     *float64 `gorm:"column:apparent_wind_direction_speed_kt" json:"apparentWindSpeed"`
+	ApparentWindGustSpeed *float64 `gorm:"column:apparent_wind_direction_gust_speed_kt" json:"apparentWindGustSpeed"`
+	TrueWindDirection     *uint8   `gorm:"column:true_wind_direction_rhumb" json:"trueWindDirection"`
+	TrueWindSpeed         *float64 `gorm:"column:true_wind_speed_kt" json:"trueWindSpeed"`
+	TrueWindGustSpeed     *float64 `gorm:"column:true_wind_gust_speed_kt" json:"trueWindGustSpeed"`
 }
 
 func (Weather) TableName() string {
@@ -51,8 +50,8 @@ func (r Position) GetTimestamp() int64 {
 
 type Battery struct {
 	Timestamp  int64   `gorm:"column:timestamp;primaryKey" json:"timestamp"`
-	Percent    uint8   `gorm:"column:percent" json:"percent"`
-	ChangeRate float64 `gorm:"column:change_rate" json:"changeRate"`
+	Charge     uint8   `gorm:"column:charge_percent" json:"charge"`
+	Voltage    float64 `gorm:"column:voltage_v" json:"voltage"`
 }
 
 func (Battery) TableName() string {
