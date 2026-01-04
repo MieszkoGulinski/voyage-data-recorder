@@ -1,5 +1,9 @@
 package database
 
+import (
+	"gorm.io/gorm"
+)
+
 // Add tables structure here
 
 // All columns with sensor data be null if the relevant sensor fails,
@@ -63,3 +67,7 @@ func (r Battery) GetTimestamp() int64 {
 }
 
 // More tables will come: GPS accuracy/status, electric motor status etc
+
+func RegenerateTables(db *gorm.DB) {
+	db.AutoMigrate(&Weather{}, &Position{}, &Battery{})
+}
