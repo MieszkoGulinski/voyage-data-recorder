@@ -12,9 +12,17 @@ import (
 
 func main() {
 	interfaceName := flag.String("interface", "vcan0", "CAN interface name to which test data will be sent")
+	activateGPS := flag.Bool("gps", false, "Activate gpsd mock?")
+	flag.Parse()
+	
 	bus, err := can.NewBusForInterfaceWithName(*interfaceName)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if *activateGPS {
+		fmt.Println("gps")
+		go sendGPSTestData()
 	}
 
 	// ConnectAndPublish blocks, we must call it in a new goroutine
@@ -30,7 +38,7 @@ func main() {
 	defer ticker.Stop()
 
 	for range ticker.C {
-		fmt.Println("Submitting weather frame")
+		fmt.Println("Submitting test weather frame")
 
 		var payload [8]uint8
 

@@ -130,3 +130,5 @@ sudo ip link set up vcan0
 ```
 
 To run the test generator, use `go run ./cmd/testgenerator` command. It accepts `--interface` CLI option similarly to the writer process (but default is `vcan0`).
+
+To generate test GPS data, add `--gps` option - this will be publishing data on port 2947 used by `gpsd`. For this option to work, `gpsd` or anything else that is already running on port 2947 should be disabled.
