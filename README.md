@@ -17,7 +17,7 @@ To add a new column:
 
 TODO implement - writer process is intended to listen to various sources: CAN using SocketCAN framework, GPS using gpsd, possibly some other sensors over HTTP.
 
-To start, use command `go run ./cmd/writer`
+To start, use command `go run ./cmd/writer`. By default it listens to `can0` interface, but it's possible to change the CAN interface to a different one, using command line option `--interface vcan0` (where `vcan0` should be replaced with the interface name). Use `vcan0` to listen to test data from the test generator process (see below).
 
 Writer process consists of the following concurrently running goroutines:
 
@@ -109,10 +109,24 @@ This process sets up a new example or working database:
 
 - If a current database exists, creates a backup to `[timestamp].sqlite`
 - Resets the database and creates new, empty tables
-- Optionally, writes example data to the database
+- Optionally, writes example data to the database - select "yes" for testing, select "no" for creating an empty but usable database.
 
 When user decides to fill the database with test data, the script generates random but realistic data. Optionally it can inject NULL values into the database, meaning a sensor fault, and readouts exceeding safe limits (e.g. motor temperature).
 
-To run, use `go run ./cmd/seeder`. In the command line, user needs to answer questions (write example data? should the example data indicate fault?)
+To run, use `go run ./cmd/seeder`. In the command line, user needs to answer questions (write example data? should the example data indicate fault?).
 
 **Do not run seeder when the writer is running too** - SQLite allows multiple reader processes, but only a single writer process. Such an error is indicated by `database is locked` message.
+
+## CAN test data generator
+
+This process submits test data as if they were coming from actual sensors.
+
+At first, a virtual CAN interface is needed. To create one in Linux, named `vcan0`, run the following commands:
+
+```bash
+sudo modprobe vcan
+sudo ip link add dev vcan0 type vcan
+sudo ip link set up vcan0
+```
+
+To run the test generator, use `go run ./cmd/testgenerator` command. It accepts `--interface` CLI option similarly to the writer process (but default is `vcan0`).

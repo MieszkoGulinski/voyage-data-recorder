@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
+	github.com/brutella/can v0.0.2
 	github.com/go-chi/chi v1.5.5
 	github.com/racingmars/go3270 v0.9.11
 	gorm.io/driver/sqlite v1.6.0
