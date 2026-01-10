@@ -29,7 +29,7 @@ Writer process consists of the following concurrently running goroutines:
 - converts it to float
 - if the received data is valid, submits it to a buffered channel - there is one channel for each sensor type
 
-The reason for using a buffered channel is that the writer process reads data from the channel in chunks every 2 minutes and averages them, and the sensor data is received approximately every second to several seconds.
+The reason for using a buffered channel is that the writer process reads data from the channel in chunks every 1 minute and averages them, and the sensor data is received approximately every second to several seconds.
 
 ### GPS listener thread
 
@@ -41,16 +41,23 @@ There could be more sources in the future - this may include manually entering a
 
 ### Writer thread
 
-- reads a chunk of data from channels periodically - every 2 minutes
+- reads a chunk of data from channels periodically - every 1 minute
 - if there are no received data in a given channel, it means that a sensor is faulty, write NULL to the database for this particular sensor
-- performs mathematical operations on the data, depending on sensor type - usually it's averaging, but in the wind data, we extract both average and maximum wind speed in each 2 minute window (to obtain wind gust speed)
+- performs mathematical operations on the data, depending on sensor type - usually it's averaging, but in the wind data, we extract both average and maximum wind speed in each 1 minute window (to obtain wind gust speed)
 - generates derived data - true wind is calculated based on apparent wind and SOG/COG from GPS
-- saves the data to DB - to reduce SD card wear, in each 2-minute cycle, we write data to all tables in a single transaction
+- saves the data to DB - to reduce SD card wear, in each 1-minute cycle, we write data to all tables in a single transaction
 - in the future, it will update the display connected with SPI
 
 ### More cycles?
 
-To have multiple cycles, with varying periods for various sensor types, we have to add more steps:
+To have various cycle time for various sensors, it's possible to do something like that:
+
+- In each 1-minute cycle, skip saving a chunk
+- Instead, save received data to a buffer, for averaging.
+
+In this case, a cycle for a given sensor will always be a multiple for the base 1-minute.
+
+Alternatively, it's possible to have the following threads:
 
 1. One listener, as above
 2. Multiple converters, reading a chunk every specified time (depending on converter), performing averaging and submitting data to be saved to a channel
@@ -103,6 +110,27 @@ The protocol requires a server and a client. The client will be a terminal emula
 
 Unlike the HTML and JSON APIs, each connection is **stateful**. In our case, the state consists of currently displayed table id, and pagination history.
 
+## Periodic backup process
+
+This process is intended to be executed **daily** by a cron, and does two things:
+
+- Backs up an existing database
+- Implements log rotation scheme, if specified by the user
+
+Unlike the seeder process (see below), backup process can run when the writer process is running.
+
+To run, use `go run ./cmd/backup`. Command line options:
+
+**TODO** complete these options, so far we have hardcoded `db.sqlite` as input, and `backup.sqlite` as output
+
+- `--input-file /var/log/logger/db.sqlite` - path to the database file to be backed up. When `--input-file` is not specified, the program defaults to `db.sqlite` in the current directory.
+- `--output-file /var/log/logger/before-testing.sqlite` - path to the backup file to be created. Cannot be used together with `--rotate` option, as when we use `--rotate`, the filename is automatically generated. Cannot be used together with `--dir` option. If a file already exists under the specified destination, it will be overwritten. When `--output-file` is not specified, the program defaults to `backup.sqlite` in the directory specified in `--dir`, and when `--dir` is not specified, defaults to the current directory.
+- `--dir /mnt/backup/logger` - directory where backups are stored (will be automatically created if it doesn't exist)
+- `--rotate 4` - activates [backup rotation](https://en.wikipedia.org/wiki/Backup_rotation_scheme) with N tiers (4 tiers = 4 backup files) for 2^N days (in this case 16 days) - see [here](https://en.wikipedia.org/wiki/Backup_rotation_scheme#Tower_of_Hanoi) for the algorithm. Note that activating this option **will delete existing backups**, if some exist and their names conform to `YYYY-MM-DD.sqlite` pattern. Skip this option to disable backup rotation.
+- `--dry` - doesn't actually perform a backup, but prints what files would be deleted because of backup rotation. Must be used with `--rotate` option.
+- `--retry 2` - overrides count of attempts of backing up, if backup fails (default is 1 attempt). Useful when running the backup using cron, but not needed when using systemd timers, as systemd timers can be configured to retry.
+- `--diagnostics` - adds messages written to stdout about the process. Disabled by default, to avoid unnecessary SD card wear by writing logs.
+
 ## Seeder process
 
 This process sets up a new example or working database:
@@ -117,7 +145,7 @@ To run, use `go run ./cmd/seeder`. In the command line, user needs to answer que
 
 **Do not run seeder when the writer is running too** - SQLite allows multiple reader processes, but only a single writer process. Such an error is indicated by `database is locked` message.
 
-## CAN test data generator
+## CAN and GPS test data generator
 
 This process submits test data as if they were coming from actual sensors.
 
