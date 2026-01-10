@@ -8,7 +8,11 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-func setupBackupFile(backupPath string) error {
+func setupBackupFile(backupPath string, diagnostics bool) error {
+	if diagnostics {
+		fmt.Println("Setting up backup file")
+	}
+
 	backupFileConn, err := sql.Open("sqlite3", "file:"+backupPath)
 	if err != nil {
 		return err
@@ -33,7 +37,11 @@ func setupBackupFile(backupPath string) error {
 	return nil
 }
 
-func runBackup(sourcePath string, backupPath string) error {
+func runBackup(sourcePath string, backupPath string, diagnostics bool) error {
+	if diagnostics {
+		fmt.Println("Connecting to working and backup DB")
+	}
+
 	driver := sqlite3.SQLiteDriver{}
 	sourceDriverConn, err := driver.Open("file:" + sourcePath + "?mode=ro")
 	if err != nil {
@@ -59,6 +67,10 @@ func runBackup(sourcePath string, backupPath string) error {
 		return fmt.Errorf("not a sqlite3 connection")
 	}
 
+	if diagnostics {
+		fmt.Println("Starting actual backup")
+	}
+
 	backup, err := destConn.Backup(
 		"main", // always "main"
 		srcConn,
@@ -72,6 +84,9 @@ func runBackup(sourcePath string, backupPath string) error {
 	defer backup.Finish()
 
 	for {
+		if diagnostics {
+			fmt.Println("Running backup step")
+		}
 		done, err := backup.Step(100) // batch of 100 pages, each page has 4096 bytes, so each step processes ~400 kB
 		if err != nil {
 			fmt.Println(err)
@@ -88,7 +103,11 @@ func runBackup(sourcePath string, backupPath string) error {
 	return nil
 }
 
-func runIntegrityCheck(backupPath string) error {
+func runIntegrityCheck(backupPath string, diagnostics bool) error {
+	if diagnostics {
+		fmt.Println("Running integrity check")
+	}
+
 	backupFileConn, err := sql.Open("sqlite3", "file:"+backupPath)
 	if err != nil {
 		return err
