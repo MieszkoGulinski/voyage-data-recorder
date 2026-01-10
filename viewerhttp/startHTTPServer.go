@@ -3,6 +3,7 @@ package viewerhttp
 import (
 	"datalogger/database"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -36,13 +37,14 @@ func generateApiListHandler[T database.WithTimestamp](db *gorm.DB,
 	}
 }
 
-func StartHTTPServer(db *gorm.DB) {
+func StartHTTPServer(db *gorm.DB, port int) {
 	r := chi.NewRouter()
 
 	// TODO write HTML renderer
 	r.Get("/api/weather", generateApiListHandler(db, &database.Weather{}))
 	r.Get("/api/positions", generateApiListHandler(db, &database.Position{}))
-	r.Get("/api/battery",  generateApiListHandler(db, &database.Battery{}))
+	r.Get("/api/battery", generateApiListHandler(db, &database.Battery{}))
 
-	http.ListenAndServe(":8080", r)
+	addr := fmt.Sprintf(":%d", port)
+	http.ListenAndServe(addr, r)
 }

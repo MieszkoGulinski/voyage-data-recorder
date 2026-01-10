@@ -15,9 +15,13 @@ To add a new column:
 
 ## Writer process
 
-TODO implement - writer process is intended to listen to various sources: CAN using SocketCAN framework, GPS using gpsd, possibly some other sensors over HTTP.
+**TODO** implement - writer process is intended to listen to various sources: CAN using SocketCAN framework, GPS using gpsd, possibly some other sensors over HTTP.
 
-To start, use command `go run ./cmd/writer`. By default it listens to `can0` interface, but it's possible to change the CAN interface to a different one, using command line option `--interface vcan0` (where `vcan0` should be replaced with the interface name). Use `vcan0` to listen to test data from the test generator process (see below).
+To start, use command `go run ./cmd/writer`. Options:
+
+- `--interface vcan0` - CAN interface to listen to. Defaults to `can0`. When running the test data generator, change to the interface used by the generator, by default it's `vcan0` - see below for the test generator configuration options.
+- `--gpsd-port 2498` - Port on which `gpsd` or test data generator submits GPS data. Defaults to 2497, but for testing, another port may be used to avoid collision with running `gpsd`.
+- `--diagnostics` - adds messages written to stdout useful for debugging. Disabled by default, to avoid unnecessary SD card wear by writing logs.
 
 Writer process consists of the following concurrently running goroutines:
 
@@ -65,21 +69,22 @@ Alternatively, it's possible to have the following threads:
 
 ## Viewer process
 
-To start, use command `go run ./cmd/reader`
-
 Provides the following ways of viewing the data:
 
 - JSON API
 - HTML viewer
 - tn3270
 
-This is only a viewer - it does not write to the database.
+This is only a viewer - it does not write to the database. To create a database for testing, use the seed script described later.
 
-To create a database for testing, use the seed script described later.
+To start, use command `go run ./cmd/reader`. Options:
+
+- `--port 8000` - port on which JSON API and HTML will be served. Defaults to 8080.
+- `--tn3270-port 3271` - port on which tn3270-based viewer will be served. Defaults to 3270.
 
 ### JSON API
 
-Port 8080. Format is `GET /api/[tableName]?lastTimestamp=[lastTimestamp]` where:
+Port specified in option `--port`, by default 8080. Format is `GET /api/[tableName]?lastTimestamp=[lastTimestamp]` where:
 
 - `tableName` - `positions`, `weather` etc
 - `lastTimestamp` - Unix timestamp in seconds, of oldest entry from previous page, skip to display first page
@@ -88,25 +93,11 @@ The JSON API is intended to be used together with a separate viewing application
 
 ### HTML viewer
 
-Port 8080. The home page (`/`) returns a list of tables with links. Individual page tables are `/positions`, `/weather` etc. Page size is hardcoded, there is a link to new page with automatically appended `lastTimestamp` to make use of browser's history for going back and forth.
+Port specified in option `--port`, by default 8080. The home page (`/`) returns a list of tables with links. Individual page tables are `/positions`, `/weather` etc. Page size is hardcoded, there is a link to new page with automatically appended `lastTimestamp` to make use of browser's history for going back and forth.
 
 ### tn3270 viewer
 
-The viewer can be used on a [3270 terminal emulator](https://en.wikipedia.org/wiki/3270_emulator). Uses [go3270](https://github.com/racingmars/go3270) library.
-
-#### What is the tn3270 protocol?
-
-It is a protocol to submit text to display (with colors), with optional places to be filled by user, and to receive user inputs. The client displays the received screen content, and on pressing a function key or Enter, sends the data filled by the user back to server.
-
-The protocol supports free form text inputs with length limit, and also masked password input.
-
-The protocol comes from IBM mainframe computers, and uses EBCDIC encoding internally. [3270 terminals](https://en.wikipedia.org/wiki/IBM_3270) used a custom connection standard, but later a feature appered so that the same protocol could be used over telnet - similarly to how many older computers used serial port for console, but the same console can now be used over SSH, and it doesn't matter for the OS what means of transport is used. But unlike serial ports and SSH, not every keystroke is sent, instead Enter and function keys (F1-F12) work as "submit" buttons.
-
-The protocol requires a server and a client. The client will be a terminal emulator - there are multiple ones available, e.g. for Linux there is x3270 and c3270. The server can be:
-
-- an OS that natively supports this protocol
-- an emulator that runs an appropriate OS (e.g. Hercules emulator running MVS)
-- an application running on any OS, but implementing the protocol - this is what we're doing here.
+Port specified in option `--tn3270-port`, by default port 3270. The viewer can be used on a [3270 terminal emulator](https://en.wikipedia.org/wiki/3270_emulator). Uses [go3270](https://github.com/racingmars/go3270) library. See [here](./what-is-3270.md) for explaining what it is.
 
 Unlike the HTML and JSON APIs, each connection is **stateful**. In our case, the state consists of currently displayed table id, and pagination history.
 
@@ -129,7 +120,7 @@ To run, use `go run ./cmd/backup`. Command line options:
 - `--rotate 4` - activates [backup rotation](https://en.wikipedia.org/wiki/Backup_rotation_scheme) with N tiers (4 tiers = 4 backup files) for 2^N days (in this case 16 days) - see [here](https://en.wikipedia.org/wiki/Backup_rotation_scheme#Tower_of_Hanoi) for the algorithm. Note that activating this option **will delete existing backups**, if some exist and their names conform to `YYYY-MM-DD.sqlite` pattern. Skip this option to disable backup rotation.
 - `--dry` - doesn't actually perform a backup, but prints what files would be deleted because of backup rotation. Must be used with `--rotate` option.
 - `--retry 2` - overrides count of attempts of backing up, if backup fails (default is 1 attempt). Useful when running the backup using cron, but not needed when using systemd timers, as systemd timers can be configured to retry.
-- `--diagnostics` - adds messages written to stdout about the process. Disabled by default, to avoid unnecessary SD card wear by writing logs.
+- `--diagnostics` - adds messages written to stdout useful for debugging. Disabled by default, to avoid unnecessary SD card wear by writing logs.
 
 ## Seeder process
 
@@ -157,6 +148,8 @@ sudo ip link add dev vcan0 type vcan
 sudo ip link set up vcan0
 ```
 
-To run the test generator, use `go run ./cmd/testgenerator` command. It accepts `--interface` CLI option similarly to the writer process (but default is `vcan0`).
+To run the test generator, use `go run ./cmd/testgenerator` command. Options:
 
-To generate test GPS data, add `--gps` option - this will be publishing data on port 2947 used by `gpsd`. For this option to work, `gpsd` or anything else that is already running on port 2947 should be disabled.
+- `--interface vcan0` - CAN interface to submit data to, defaults to `vcan0`.
+- `--gps` - activates sending test GPS data, disabled by default.
+- `--port 2498` - port on which test GPS data will be published, if `--gps` option is active. Defaults to port 2947, used by default by `gpsd`, but for testing it's better to specify a different port to avoid collision with running `gpsd`.

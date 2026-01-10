@@ -13,8 +13,9 @@ import (
 func main() {
 	interfaceName := flag.String("interface", "vcan0", "CAN interface name to which test data will be sent")
 	activateGPS := flag.Bool("gps", false, "Activate gpsd mock?")
+	gpsPort := flag.Int("port", 2497, "When using --gps option, port on which gpsd mock will be sending data")
 	flag.Parse()
-	
+
 	bus, err := can.NewBusForInterfaceWithName(*interfaceName)
 	if err != nil {
 		log.Fatal(err)
@@ -22,14 +23,14 @@ func main() {
 
 	if *activateGPS {
 		fmt.Println("gps")
-		go sendGPSTestData()
+		go sendGPSTestData(*gpsPort)
 	}
 
 	// ConnectAndPublish blocks, we must call it in a new goroutine
 	go func() {
-    if err := bus.ConnectAndPublish(); err != nil {
-        log.Fatal(err)
-    }
+		if err := bus.ConnectAndPublish(); err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	defer bus.Disconnect()
@@ -44,13 +45,13 @@ func main() {
 
 		// Create values
 		var temperature int16 = 331 // 33.1 C
-		var pressure uint16 = 9981 // 998.1 hPa
-		var appWindSpeed uint8 = 4 // 4 kt
-		var appWindDir uint8 = 1 // 0=N, 1=NbE, 2=NNE, ..., 31=NbW
-		var humidity uint8 = 86 // 86%
+		var pressure uint16 = 9981  // 998.1 hPa
+		var appWindSpeed uint8 = 4  // 4 kt
+		var appWindDir uint8 = 1    // 0=N, 1=NbE, 2=NNE, ..., 31=NbW
+		var humidity uint8 = 86     // 86%
 
 		// Form packet
-		binary.BigEndian.PutUint16(payload[0:2], uint16(temperature)) // int16 must be converted to uint16 to be saved to 
+		binary.BigEndian.PutUint16(payload[0:2], uint16(temperature)) // int16 must be converted to uint16 to be saved to
 		binary.BigEndian.PutUint16(payload[2:4], pressure)
 		payload[4] = appWindSpeed
 		payload[5] = appWindDir

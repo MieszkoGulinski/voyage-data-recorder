@@ -26,22 +26,23 @@ func generateTPV() TPVMessage {
 		Class: "TPV",
 		Mode:  3, // 3D fix
 		Time:  time.Now().UTC().Format(time.RFC3339Nano),
-		Lat:   54.306,   // latitude
-		Lon:   15.753,   // longitude
-		Alt:   0.5,      // meters
-		Speed: 1.2,      // m/s
-		Climb: 0.0,      // m/s
+		Lat:   54.306, // latitude
+		Lon:   15.753, // longitude
+		Alt:   0.5,    // meters
+		Speed: 1.2,    // m/s
+		Climb: 0.0,    // m/s
 	}
 }
 
-func sendGPSTestData() {
-	listener, err := net.Listen("tcp", "localhost:2947")
+func sendGPSTestData(port int) {
+	addr := fmt.Sprintf(":%d", port)
+	listener, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer listener.Close()
 
-	log.Println("GPSD test data generator listening on localhost:2947")
+	fmt.Println("GPSD test data generator listening on " + addr)
 
 	for {
 		conn, err := listener.Accept()
@@ -62,7 +63,7 @@ func sendGPSExampleToClient(conn net.Conn) {
 
 	for range ticker.C {
 		fmt.Println("Submitting test GPS TPV frame")
-		
+
 		tpv := generateTPV()
 		data, err := json.Marshal(tpv)
 		if err != nil {

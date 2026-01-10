@@ -66,8 +66,10 @@ func onConnect3270(conn net.Conn, db *gorm.DB) {
 	}
 }
 
-func Start3270Server(db *gorm.DB) {
-	ln, err := net.Listen("tcp", ":3270")
+func Start3270Server(db *gorm.DB, port int) {
+	addr := fmt.Sprintf(":%d", port)
+
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
