@@ -11,3 +11,10 @@ The protocol requires a server and a client. The client will be a terminal emula
 - an OS that natively supports this protocol
 - an emulator that runs an appropriate OS (e.g. Hercules emulator running MVS)
 - an application running on any OS, but implementing the protocol - this is what we're doing here.
+
+## How to connect using `c3270`:
+
+1. Install `c3270`. For, Ubuntu, Debian, Mint etc, the command is `sudo apt install c3270`
+2. Use `c3270 localhost:3270` command (replace `localhost:3270` with other address, if you're connecting to other server or other port)
+3. You should see a screen containing a table, and a line describing what keys are available
+4. After pressing `F3`, the 3270 emulator closes
