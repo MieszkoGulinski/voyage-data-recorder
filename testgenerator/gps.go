@@ -1,6 +1,7 @@
 package testgenerator
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -34,7 +35,7 @@ func generateTPV() TPVMessage {
 	}
 }
 
-func StartGPSTestDataGenerator(port int) error {
+func StartGPSTestDataGenerator(ctx context.Context, port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -44,40 +45,62 @@ func StartGPSTestDataGenerator(port int) error {
 
 	fmt.Println("GPSD test data generator listening on " + addr)
 
+	// Stop listener when context is canceled
+	go func() {
+		<-ctx.Done()
+		_ = listener.Close()
+	}()
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			log.Println("accept error:", err)
-			continue
+			select {
+			case <-ctx.Done():
+				return ctx.Err() // graceful shutdown
+			default:
+				log.Println("accept error:", err)
+				continue
+			}
 		}
 		fmt.Println("Client connected:", conn.RemoteAddr())
-		go sendGPSExampleToClient(conn)
+		go sendGPSExampleToClient(ctx, conn)
 	}
 }
 
-func sendGPSExampleToClient(conn net.Conn) {
+func sendGPSExampleToClient(ctx context.Context, conn net.Conn) {
 	defer conn.Close()
 
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
-	for range ticker.C {
-		fmt.Println("Submitting test GPS TPV frame")
-
-		tpv := generateTPV()
-		data, err := json.Marshal(tpv)
-		if err != nil {
-			log.Println("JSON marshal error:", err)
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("GPS client disconnecting due to shutdown:", conn.RemoteAddr())
 			return
-		}
 
-		// gpsd clients expect newline-delimited JSON
-		data = append(data, '\n')
-
-		_, err = conn.Write(data)
-		if err != nil {
-			log.Println("TCP write error:", err)
-			return
+		case <-ticker.C:
+			sendSingleGPSFrameToClient(conn)
 		}
+	}
+}
+
+func sendSingleGPSFrameToClient(conn net.Conn) {
+	fmt.Println("Submitting test GPS TPV frame")
+
+	tpv := generateTPV()
+	data, err := json.Marshal(tpv)
+	if err != nil {
+		log.Println("JSON marshal error:", err)
+		return
+	}
+
+	// gpsd clients expect newline-delimited JSON
+	data = append(data, '\n')
+
+	_, err = conn.Write(data)
+	if err != nil {
+		log.Println("TCP write error:", err)
+		return
 	}
 }
