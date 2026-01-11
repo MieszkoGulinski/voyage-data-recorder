@@ -31,13 +31,17 @@ Bytes Format  Value                    Unit      Notes
 1     int8    Motor 2 current          1 A       Negative number = motor running backwards
 1     int8    Motor 1 PWM setting      1/128     Negative number = motor running backwards
 1     int8    Motor 2 PWM setting      1/128     Negative number = motor running backwards
-1     int8    Water temperature        1 C
+1     int8    Water temperature        1 C       Sensor for water temperature is connected to the motor controller
 1     -       Fault status             -         Individual bits indicate what sensors failed
----- ID=0x070 from battery monitor ----
+---- ID=0x056 from battery monitor ----
 1     uint8   Battery charge           %         As reported by BMS
 2     uint16  Battery voltage          0.01 V    24 V system
 2     int16   Battery current          0.01 A    Includes both charging and discharging
 1     int8    Battery temperature 1    1 C
 1     int8    Battery temperature 2    1 C
 1     -       Fault status             -         Individual bits indicate what sensors failed
+---- ID=0x058 from autopilot ----
+1     uint8   Status                   -         0 = off, 1 = active, more = various types of faults
 ```
+
+In addition, a separate CAN frame IDs may be used to submit desired PWM setting from the helm to the motors, or other controls, but this is not logged - the logger does not listen to frames with unknown ID.

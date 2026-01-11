@@ -1,18 +1,18 @@
-## SPI display (plan for the future!)
+# SPI display (plan for the future!)
 
-This is not implemented yet!
+**This is not implemented yet!**
 
 The application will also display the data on an e-paper display connected with SPI. The chosen model is Waveshare 360x240 3.52" e-paper display. The data logger will be displaying a pressure graph (for weather prediction) and various sensor readouts. It will be updated every 1 minute, in the same thread as writing to the database.
 
 What will be displayed:
 
-- 300x160 - pressure graph for the last 10 hours (2 minutes per pixel x 300 px = 600 minutes = 10 h), vertical scale 0.5 hPa per pixel from 960 to 1040 hPa.
+- 300x160 - pressure graph for the last 5 hours (1 minute per pixel x 300 px = 300 minutes = 5 h), vertical scale 0.5 hPa per pixel from 960 to 1040 hPa.
 - 60x160 - right to the graph - space filled with text, 5x8 characters, with warnings
 - 360x80 - below the graph and warnings - space filled with text, 30x4 characters (each character is 12x20 px), with sensor readouts
 
 ### Graph
 
-Uses a circular buffer (Go slice) to store data.
+Uses a circular buffer in a Go slice to store data. On starting the process, the buffer should be populated with previous data, if it exists in DB. Don't interpolate between missing points, display simply no line between them instead, to avoid false readings. Each new datapoint (every 1 minute) shifts the displayed existing datapoints to the left.
 
 ### Sensor readouts space
 

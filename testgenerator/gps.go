@@ -1,4 +1,4 @@
-package main
+package testgenerator
 
 import (
 	"encoding/json"
@@ -34,7 +34,7 @@ func generateTPV() TPVMessage {
 	}
 }
 
-func sendGPSTestData(port int) {
+func StartGPSTestDataGenerator(port int) {
 	addr := fmt.Sprintf(":%d", port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -76,7 +76,7 @@ func sendGPSExampleToClient(conn net.Conn) {
 
 		_, err = conn.Write(data)
 		if err != nil {
-			log.Println("write error:", err)
+			log.Println("TCP write error:", err)
 			return
 		}
 	}

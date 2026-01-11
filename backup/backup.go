@@ -1,4 +1,4 @@
-package main
+package backup
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-func setupBackupFile(backupPath string, diagnostics bool) error {
+func SetupBackupFile(backupPath string, diagnostics bool) error {
 	if diagnostics {
 		fmt.Println("Setting up backup file")
 	}
@@ -37,7 +37,7 @@ func setupBackupFile(backupPath string, diagnostics bool) error {
 	return nil
 }
 
-func runBackup(sourcePath string, backupPath string, diagnostics bool) error {
+func RunBackup(sourcePath string, backupPath string, diagnostics bool) error {
 	if diagnostics {
 		fmt.Println("Connecting to working and backup DB")
 	}
@@ -103,7 +103,7 @@ func runBackup(sourcePath string, backupPath string, diagnostics bool) error {
 	return nil
 }
 
-func runIntegrityCheck(backupPath string, diagnostics bool) error {
+func RunIntegrityCheck(backupPath string, diagnostics bool) error {
 	if diagnostics {
 		fmt.Println("Running integrity check")
 	}

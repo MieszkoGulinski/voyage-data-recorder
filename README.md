@@ -2,6 +2,14 @@
 
 Data logger / very simple [voyage data recorder](https://en.wikipedia.org/wiki/Voyage_data_recorder) for a boat / yacht. Intended to run on Raspberry Pi or a similar computer. Uses SQLite as the DBMS.
 
+Executable entry points are in `cmd` directory:
+
+- `writer` - receives data from sensors, preprocesses received data and saves it to DB
+- `reader` - provides API to view saved data
+- `seeder` - sets up a new fresh database, and optionally fills it with test data (for development)
+- `testgenerator` - generates test data closely resembling actual sensors output
+- `backup` - creates a backup
+
 ## Table format
 
 All tables have `timestamp INTEGER PRIMARY KEY` column, storing Unix timestamp in seconds. Other columns are dependent on the specific table.
@@ -33,7 +41,7 @@ Writer process consists of the following concurrently running goroutines:
 - converts it to float
 - if the received data is valid, submits it to a buffered channel - there is one channel for each sensor type
 
-The reason for using a buffered channel is that the writer process reads data from the channel in chunks every 1 minute and averages them, and the sensor data is received approximately every second to several seconds.
+The reason for using a buffered channel is that the writer process reads data from the channel in chunks every 1 minute and summarizes them, and the sensor data is received approximately every second to several seconds.
 
 ### GPS listener thread
 
@@ -81,6 +89,7 @@ To start, use command `go run ./cmd/reader`. Options:
 
 - `--port 8000` - port on which JSON API and HTML will be served. Defaults to 8080.
 - `--tn3270-port 3271` - port on which tn3270-based viewer will be served. Defaults to 3270.
+- `--diagnostics` - display status-related messages. Disabled by default, to avoid unnecessary SD card wear.
 
 ### JSON API
 
@@ -122,6 +131,8 @@ To run, use `go run ./cmd/backup`. Command line options:
 - `--retry 2` - overrides count of attempts of backing up, if backup fails (default is 1 attempt). Useful when running the backup using cron, but not needed when using systemd timers, as systemd timers can be configured to retry.
 - `--diagnostics` - adds messages written to stdout useful for debugging. Disabled by default, to avoid unnecessary SD card wear by writing logs.
 
+For more information about setting up backup, see [a separate document](./docs/backup.md).
+
 ## Seeder process
 
 This process sets up a new example or working database:
@@ -136,11 +147,15 @@ To run, use `go run ./cmd/seeder`. In the command line, user needs to answer que
 
 **Do not run seeder when the writer is running too** - SQLite allows multiple reader processes, but only a single writer process. Such an error is indicated by `database is locked` message.
 
+Seeder does not use CLI flags, but instead has an interactive interface using `survey` library.
+
 ## CAN and GPS test data generator
 
-This process submits test data as if they were coming from actual sensors.
+This process submits test data as if they were coming from actual sensors. Unlike the seeder process that creates a database filled with sample data, the test generator generates data in formats compatible with the writer process, and with period resembling the actual incoming data.
 
-At first, a virtual CAN interface is needed. To create one in Linux, named `vcan0`, run the following commands:
+For this reason, it's necessary to run the test generator and writer concurrently for significant amount of time (at least several minutes).
+
+To submit mock sensor data, a virtual CAN interface is needed. To create one in Linux, named `vcan0`, run the following commands:
 
 ```bash
 sudo modprobe vcan
@@ -153,3 +168,5 @@ To run the test generator, use `go run ./cmd/testgenerator` command. Options:
 - `--interface vcan0` - CAN interface to submit data to, defaults to `vcan0`.
 - `--gps` - activates sending test GPS data, disabled by default.
 - `--port 2498` - port on which test GPS data will be published, if `--gps` option is active. Defaults to port 2947, used by default by `gpsd`, but for testing it's better to specify a different port to avoid collision with running `gpsd`.
+
+Test data generator by default displays information in the console, there's no `--diagnostics` flag. It's not needed, as the process is not used on a running logger, it's only for development and testing.
