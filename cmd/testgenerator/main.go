@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
 	"datalogger/testgenerator"
 	"flag"
 	"fmt"
+	"log"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -12,10 +16,21 @@ func main() {
 	gpsPort := flag.Int("port", 2497, "When using --gps option, port on which gpsd mock will be sending data")
 	flag.Parse()
 
+	g, _ := errgroup.WithContext(context.Background()) // TODO: the second argument is context, pass it to goroutines below
+
 	if *activateGPS {
 		fmt.Println("Starting GPS test data generator")
-		go testgenerator.StartGPSTestDataGenerator(*gpsPort)
+		g.Go(func() error {
+			return testgenerator.StartGPSTestDataGenerator(*gpsPort)
+		})
 	}
 
-	testgenerator.StartCANTestDataGenerator(*interfaceName)
+	g.Go(func() error {
+		return testgenerator.StartCANTestDataGenerator(*interfaceName)
+	})
+
+	err := g.Wait()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

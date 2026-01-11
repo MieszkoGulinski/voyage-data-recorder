@@ -34,11 +34,11 @@ func generateTPV() TPVMessage {
 	}
 }
 
-func StartGPSTestDataGenerator(port int) {
+func StartGPSTestDataGenerator(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error opening GPSD TCP interface: %w", err)
 	}
 	defer listener.Close()
 
@@ -50,7 +50,7 @@ func StartGPSTestDataGenerator(port int) {
 			log.Println("accept error:", err)
 			continue
 		}
-		log.Println("Client connected:", conn.RemoteAddr())
+		fmt.Println("Client connected:", conn.RemoteAddr())
 		go sendGPSExampleToClient(conn)
 	}
 }

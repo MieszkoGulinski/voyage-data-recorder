@@ -9,16 +9,16 @@ import (
 	"github.com/brutella/can"
 )
 
-func StartCANTestDataGenerator(interfaceName string) {
+func StartCANTestDataGenerator(interfaceName string) error {
 	bus, err := can.NewBusForInterfaceWithName(interfaceName)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error opening CAN interface %q: %w", interfaceName, err)
 	}
 
 	// ConnectAndPublish blocks, we must call it in a new goroutine
 	go func() {
 		if err := bus.ConnectAndPublish(); err != nil {
-			log.Fatal(err)
+			log.Fatal(err) // TODO replace with returning an error
 		}
 	}()
 
@@ -53,7 +53,9 @@ func StartCANTestDataGenerator(interfaceName string) {
 		}
 		err = bus.Publish(frame)
 		if err != nil {
-			log.Fatal(err)
+			return fmt.Errorf("Error submitting frame to CAN: %w", err)
 		}
 	}
+
+	return nil
 }
