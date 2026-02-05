@@ -1,15 +1,17 @@
 package main
 
 import (
+	"context"
 	"datalogger/database"
 	"fmt"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
-	// TODO implement writer
 	db := database.CreateDatabaseWriterConnection()
-	db.Exec("PRAGMA journal_mode = WAL;")
-	db.Exec("PRAGMA synchronous = NORMAL;")
+
+	g, ctx := errgroup.WithContext(context.Background())
 
 	fmt.Println("Writer active")
 }

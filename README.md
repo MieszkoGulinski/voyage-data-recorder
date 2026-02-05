@@ -23,13 +23,14 @@ To add a new column:
 
 ## Writer process
 
-**TODO** implement - writer process is intended to listen to various sources: CAN using SocketCAN framework, GPS using gpsd, possibly some other sensors over HTTP.
+**TODO** implement - writer process is intended to listen to various sources: CAN using SocketCAN framework, GPS using gpsd, other sources over HTTP.
 
 To start, use command `go run ./cmd/writer`. Options:
 
 - `--interface vcan0` - CAN interface to listen to. Defaults to `can0`. When running the test data generator, change to the interface used by the generator, by default it's `vcan0` - see below for the test generator configuration options.
 - `--gpsd-port 2498` - Port on which `gpsd` or test data generator submits GPS data. Defaults to 2497, but for testing, another port may be used to avoid collision with running `gpsd`.
 - `--diagnostics` - adds messages written to stdout useful for debugging. Disabled by default, to avoid unnecessary SD card wear by writing logs.
+- `--http-port 8082` - Port on which HTTP listener will operate. Defaults to 8081, to not collide with the viewer process.
 
 Writer process consists of the following concurrently running goroutines:
 
@@ -45,11 +46,17 @@ The reason for using a buffered channel is that the writer process reads data fr
 
 ### GPS listener thread
 
-Works similarly to the CAN listener, but receives data from `gpsd` instead.
+Works similarly to the CAN listener, but receives data from `gpsd` instead, over raw TCP.
 
-#### More sources
+### HTTP listener thread
 
-There could be more sources in the future - this may include manually entering a position based on navigation methods other than GPS.
+Receives messages sent over a HTTP API. This is intended to receive e.g.:
+
+- messages received by a [NAVTEX](https://en.wikipedia.org/wiki/NAVTEX) receiver - a soundcard-based receiver will be added later
+- manually entered geographical position, in case of GPS failure
+- custom text messages
+
+See [here](./docs/input-format.md) for details of API.
 
 ### Writer thread
 

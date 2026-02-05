@@ -12,6 +12,7 @@ import (
 func main() {
 	httpPort := flag.Int("port", 8080, "Port on which JSON API and HTML is served")
 	tn3270Port := flag.Int("tn3270-port", 3270, "Port on which JSON API and HTML is served")
+	diagnostics := flag.Bool("diagnostics", false, "Write messages about server operation?")
 	flag.Parse()
 
 	db := database.CreateDatabaseReaderConnection()
@@ -29,7 +30,9 @@ func main() {
 		viewerhttp.StartHTTPServer(db, *httpPort)
 	}()
 
-	fmt.Println("Servers listening - press Ctrl+C to stop")
+	if *diagnostics {
+		fmt.Println("Servers listening")
+	}
 
 	wg.Wait()
 }

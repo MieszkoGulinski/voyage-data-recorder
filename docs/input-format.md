@@ -45,3 +45,19 @@ Bytes Format  Value                    Unit      Notes
 ```
 
 In addition, a separate CAN frame IDs may be used to submit desired PWM setting from the helm to the motors, or other controls, but this is not logged - the logger does not listen to frames with unknown ID.
+
+## HTTP input
+
+Listening on to HTTP port 8081. This is intended for:
+
+- integration with [fldigi](https://www.w1hkj.org/) based receiver for [NAVTEX](https://en.wikipedia.org/wiki/NAVTEX) and other safety-related messages - passthrough of received messages from fldigi to the logger will be another part of this project
+- manually entering position determined using other means than GPS
+- manually entering custom messages to serve as a text log
+
+API endpoints are:
+
+- POST `/navtex` - format `{"message": "..."}`
+- POST `/position` - format: `{"lat": "54*55.342N", "lon": "17*48.756E"}`
+- POST `/text` - format: `{"message": "..."}`
+
+Position should be given in format: `DD*MM.MMM[NESW]` - asterisk is used to mark degrees, and then minutes are given in decimal format. N/S and E/W indicate hemisphere.

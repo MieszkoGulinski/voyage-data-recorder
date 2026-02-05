@@ -16,7 +16,7 @@ func main() {
 	gpsPort := flag.Int("port", 2497, "When using --gps option, port on which gpsd mock will be sending data")
 	flag.Parse()
 
-	g, ctx := errgroup.WithContext(context.Background()) // TODO: the second argument is context, pass it to goroutines below
+	g, ctx := errgroup.WithContext(context.Background())
 
 	if *activateGPS {
 		fmt.Println("Starting GPS test data generator")
