@@ -97,6 +97,7 @@ To start, use command `go run ./cmd/reader`. Options:
 - `--port 8000` - port on which JSON API and HTML will be served. Defaults to 8080.
 - `--tn3270-port 3271` - port on which tn3270-based viewer will be served. Defaults to 3270.
 - `--diagnostics` - display status-related messages. Disabled by default, to avoid unnecessary SD card wear.
+- `--writer-port 8082` - port on which writer process listens to incoming data. Defaults to 8081.
 
 ### JSON API
 
@@ -181,3 +182,4 @@ Test data generator by default displays information in the console, there's no `
 ## Common errors
 
 - `route ip+net: no such network interface` - this error occurs when the CAN interface is not found
+- `dial tcp4 127.0.0.1:2947: connect: connection refused` - this error occurs when gpsd is not running

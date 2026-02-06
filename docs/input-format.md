@@ -57,7 +57,7 @@ Listening on to HTTP port 8081. This is intended for:
 API endpoints are:
 
 - POST `/navtex` - format `{"message": "..."}`
-- POST `/position` - format: `{"lat": "54*55.342N", "lon": "17*48.756E"}`
+- POST `/position` - format: `{"lat": -8.702, "lon": 115.312}`
 - POST `/text` - format: `{"message": "..."}`
 
-Position should be given in format: `DD*MM.MMM[NESW]` - asterisk is used to mark degrees, and then minutes are given in decimal format. N/S and E/W indicate hemisphere.
+Position should be given in decimal degrees, with N/S and E/W indicated by sign (southern and western hemispheres are negative). This example is for position near Bali, Indonesia. Before sending the data to the writer process, it may be necessary to convert the position from another format, e.g. degrees and decimal minutes.

@@ -18,23 +18,43 @@ type MessageRequest struct {
 func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet *writer.ChannelsSet) error {
 	r := chi.NewRouter()
 
-	// Attach API route handlers
+	// API route handlers
 	r.Post("/navtex", func(w http.ResponseWriter, r *http.Request) {
 		var body MessageRequest
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
+		if body.Message == "" {
+			http.Error(w, "Message cannot be empty", http.StatusBadRequest)
+			return
+		}
 		channelsSet.NavtexCh <- body.Message
 		w.WriteHeader(http.StatusOK)
 	})
+
 	r.Post("/position", func(w http.ResponseWriter, r *http.Request) {
-		// TODO
+		var body writer.PositionMessage
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		if body.Latitude > 90 || body.Latitude < -90 || body.Longitude > 180 || body.Longitude < -180 {
+			http.Error(w, "Invalid position", http.StatusBadRequest)
+			return
+		}
+		channelsSet.PositionCh <- body
+		w.WriteHeader(http.StatusOK)
 	})
+
 	r.Post("/text", func(w http.ResponseWriter, r *http.Request) {
 		var body MessageRequest
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		if body.Message == "" {
+			http.Error(w, "Message cannot be empty", http.StatusBadRequest)
 			return
 		}
 		channelsSet.TextMessageCh <- body.Message
@@ -64,7 +84,7 @@ func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channels
 
 	select {
 	case <-ctx.Done():
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(ctx, 1*time.Second)
 		defer cancel()
 
 		return server.Shutdown(shutdownCtx)

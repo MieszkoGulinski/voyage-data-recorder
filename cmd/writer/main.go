@@ -34,7 +34,6 @@ func main() {
 	g.Go(func() error {
 		return listeners.StartHTTPListener(ctx, *httpPort, *diagnostics, channelsSet)
 	})
-
 	g.Go(func() error {
 		// Summarizer and writer to DB
 		return writer.StartWriter(ctx, db, channelsSet)

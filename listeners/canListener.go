@@ -22,10 +22,21 @@ func StartCANListener(ctx context.Context, interfaceName string, diagnostics boo
 		fmt.Printf("Frame: %v\n", frame)
 	})
 
+	errCh := make(chan error, 1)
+
 	go func() {
-		<-ctx.Done()
-		bus.Disconnect()
+		errCh <- bus.ConnectAndPublish()
 	}()
 
-	return bus.ConnectAndPublish()
+	select {
+	case <-ctx.Done():
+		if diagnostics {
+			fmt.Println("CAN listener shutting down")
+		}
+		bus.Disconnect()
+		return nil
+
+	case err := <-errCh:
+		return err
+	}
 }
