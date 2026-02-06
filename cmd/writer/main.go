@@ -23,24 +23,21 @@ func main() {
 
 	g, ctx := errgroup.WithContext(context.Background())
 
-	// Channels for data from listeners to the summarizer
-	// Each channel contains an individual data packet, already decoded from its original format
-	// textMessageCh := make(chan string)
-	// navtexCh := make(chan string)
+	channelsSet := writer.NewChannelsSet()
 
 	g.Go(func() error {
-		return listeners.StartCANListener(ctx, *canInterfaceName, *diagnostics)
+		return listeners.StartCANListener(ctx, *canInterfaceName, *diagnostics, channelsSet)
 	})
 	g.Go(func() error {
-		return listeners.StartGPSListener(ctx, *gpsdPort, *diagnostics)
+		return listeners.StartGPSListener(ctx, *gpsdPort, *diagnostics, channelsSet)
 	})
 	g.Go(func() error {
-		return listeners.StartHTTPListener(ctx, *httpPort, *diagnostics)
+		return listeners.StartHTTPListener(ctx, *httpPort, *diagnostics, channelsSet)
 	})
 
 	g.Go(func() error {
 		// Summarizer and writer to DB
-		return writer.StartWriter(ctx, db)
+		return writer.StartWriter(ctx, db, channelsSet)
 	})
 
 	if *diagnostics {

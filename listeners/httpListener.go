@@ -2,6 +2,8 @@ package listeners
 
 import (
 	"context"
+	"datalogger/writer"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,18 +11,28 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func StartHTTPListener(ctx context.Context, port int, diagnostics bool) error {
+type MessageRequest struct {
+	Message string `json:"message"`
+}
+
+func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet *writer.ChannelsSet) error {
 	r := chi.NewRouter()
 
 	// Attach API route handlers
-	r.Get("/navtex", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/navtex", func(w http.ResponseWriter, r *http.Request) {
 		// TODO
 	})
-	r.Get("/position", func(w http.ResponseWriter, r *http.Request) {
+	r.Post("/position", func(w http.ResponseWriter, r *http.Request) {
 		// TODO
 	})
-	r.Get("/text", func(w http.ResponseWriter, r *http.Request) {
-		// TODO
+	r.Post("/text", func(w http.ResponseWriter, r *http.Request) {
+		var req MessageRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		channelsSet.TextMessageCh <- req.Message
+		w.WriteHeader(http.StatusOK)
 	})
 
 	addr := fmt.Sprintf(":%d", port)

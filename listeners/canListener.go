@@ -2,6 +2,7 @@ package listeners
 
 import (
 	"context"
+	"datalogger/writer"
 	"fmt"
 
 	"github.com/brutella/can"
@@ -12,7 +13,7 @@ type CANFrame struct {
 	DB *gorm.DB
 }
 
-func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool) error {
+func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet *writer.ChannelsSet) error {
 	if diagnostics {
 		fmt.Printf("CAN listener starting on interface %s\n", interfaceName)
 	}
@@ -26,7 +27,10 @@ func StartCANListener(ctx context.Context, interfaceName string, diagnostics boo
 		fmt.Printf("Frame: %v\n", frame)
 	})
 
-	bus.ConnectAndPublish()
+	go func() {
+		<-ctx.Done()
+		bus.Disconnect()
+	}()
 
-	return nil
+	return bus.ConnectAndPublish()
 }
