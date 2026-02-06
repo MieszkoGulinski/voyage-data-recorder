@@ -20,18 +20,24 @@ func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channels
 
 	// Attach API route handlers
 	r.Post("/navtex", func(w http.ResponseWriter, r *http.Request) {
-		// TODO
+		var body MessageRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+		channelsSet.NavtexCh <- body.Message
+		w.WriteHeader(http.StatusOK)
 	})
 	r.Post("/position", func(w http.ResponseWriter, r *http.Request) {
 		// TODO
 	})
 	r.Post("/text", func(w http.ResponseWriter, r *http.Request) {
-		var req MessageRequest
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		var body MessageRequest
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
-		channelsSet.TextMessageCh <- req.Message
+		channelsSet.TextMessageCh <- body.Message
 		w.WriteHeader(http.StatusOK)
 	})
 

@@ -6,12 +6,7 @@ import (
 	"fmt"
 
 	"github.com/brutella/can"
-	"gorm.io/gorm"
 )
-
-type CANFrame struct {
-	DB *gorm.DB
-}
 
 func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet *writer.ChannelsSet) error {
 	if diagnostics {
