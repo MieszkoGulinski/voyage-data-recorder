@@ -28,7 +28,7 @@ To add a new column:
 To start, use command `go run ./cmd/writer`. Options:
 
 - `--interface vcan0` - CAN interface to listen to. Defaults to `can0`. When running the test data generator, change to the interface used by the generator, by default it's `vcan0` - see below for the test generator configuration options.
-- `--gpsd-port 2498` - Port on which `gpsd` or test data generator submits GPS data. Defaults to 2497, but for testing, another port may be used to avoid collision with running `gpsd`.
+- `--gpsd-port 2948` - Port on which `gpsd` or test data generator submits GPS data. Defaults to 2947, but for testing, another port may be used to avoid collision with running `gpsd`.
 - `--diagnostics` - adds messages written to stdout useful for debugging. Disabled by default, to avoid unnecessary SD card wear by writing logs.
 - `--http-port 8082` - Port on which HTTP listener will operate. Defaults to 8081, to not collide with the viewer process.
 
@@ -174,6 +174,10 @@ To run the test generator, use `go run ./cmd/testgenerator` command. Options:
 
 - `--interface vcan0` - CAN interface to submit data to, defaults to `vcan0`.
 - `--gps` - activates sending test GPS data, disabled by default.
-- `--port 2498` - port on which test GPS data will be published, if `--gps` option is active. Defaults to port 2947, used by default by `gpsd`, but for testing it's better to specify a different port to avoid collision with running `gpsd`.
+- `--port 2948` - port on which test GPS data will be published, if `--gps` option is active. Defaults to port 2947, used by default by `gpsd`, but for testing it's better to specify a different port to avoid collision with running `gpsd`.
 
 Test data generator by default displays information in the console, there's no `--diagnostics` flag. It's not needed, as the process is not used on a running logger, it's only for development and testing.
+
+## Common errors
+
+- `route ip+net: no such network interface` - this error occurs when the CAN interface is not found
