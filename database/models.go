@@ -37,7 +37,7 @@ func (r Weather) GetTimestamp() int64 {
 
 type Position struct {
 	Timestamp        int64    `gorm:"column:timestamp;primaryKey" json:"timestamp"`
-	SourceId         uint8    `gorm:"column:source_id" json:"sourceId"`
+	SourceId         uint8    `gorm:"column:source_id" json:"sourceId"` // 1 = GPS, 2 = manual
 	Latitude         *float64 `gorm:"column:latitude_deg" json:"latitude"`
 	Longitude        *float64 `gorm:"column:longitude_deg" json:"lognitude"`
 	SpeedOverGround  *float64 `gorm:"column:speed_over_ground_kt" json:"speedOverGround"`
@@ -65,6 +65,32 @@ func (Battery) TableName() string {
 }
 
 func (r Battery) GetTimestamp() int64 {
+	return r.Timestamp
+}
+
+type NavtexMessages struct {
+	Timestamp int64  `gorm:"column:timestamp;primaryKey" json:"timestamp"`
+	Text      string `gorm:"column:text" json:"text"`
+}
+
+func (NavtexMessages) TableName() string {
+	return "navtex_messages"
+}
+
+func (r NavtexMessages) GetTimestamp() int64 {
+	return r.Timestamp
+}
+
+type TextNotes struct {
+	Timestamp int64  `gorm:"column:timestamp;primaryKey" json:"timestamp"`
+	Text      string `gorm:"column:text" json:"text"`
+}
+
+func (TextNotes) TableName() string {
+	return "text_notes"
+}
+
+func (r TextNotes) GetTimestamp() int64 {
 	return r.Timestamp
 }
 

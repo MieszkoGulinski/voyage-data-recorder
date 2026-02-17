@@ -8,8 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// summarizeAndSave saves buffered data to the database, and clears the buffers.
-func summarizeAndSave(buffersSet *channels.BuffersSet, db *gorm.DB, diagnostics bool) error {
+func summarizeAndSaveSensors(buffersSet *channels.BuffersSet, db *gorm.DB, diagnostics bool) error {
 	weather := aggregation.SummarizeWeather(buffersSet.WeatherBuffer, time.Now().Unix())
 	// ... more types ...
 
@@ -26,5 +25,10 @@ func summarizeAndSave(buffersSet *channels.BuffersSet, db *gorm.DB, diagnostics 
 
 	// Done - buffers can be cleared
 	clearBuffers(buffersSet)
+	return nil
+}
+
+func summarizeAndSavePositions(buffersSet *channels.BuffersSet, db *gorm.DB, diagnostics bool) error {
+	// TODO
 	return nil
 }

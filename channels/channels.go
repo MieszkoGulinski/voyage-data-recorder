@@ -34,13 +34,10 @@ func NewChannelsSet() ChannelsSet {
 }
 
 type BuffersSet struct {
-	WeatherBuffer  []WeatherMessage
-	BatteryBuffer  []BatteryMessage
-	CompassBuffer  []CompassMessage
-	GPSBuffer      []gpsd.TPVReport
-	NavtexBuffer   []string
-	PositionBuffer []PositionMessage
-	TextNoteBuffer []string
+	WeatherBuffer []WeatherMessage
+	BatteryBuffer []BatteryMessage
+	CompassBuffer []CompassMessage
+	GPSBuffer     []gpsd.TPVReport
 }
 
 // Formats for individual data packets

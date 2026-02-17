@@ -3,6 +3,7 @@ package writer
 import (
 	"context"
 	"datalogger/channels"
+	"datalogger/database"
 	"time"
 
 	"github.com/stratoberry/go-gpsd"
@@ -10,9 +11,13 @@ import (
 )
 
 func StartWriter(ctx context.Context, db *gorm.DB, channelsSet channels.ChannelsSet, diagnostics bool) error {
-	interval := 1 * time.Minute
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
+	sensorTicker := time.NewTicker(1 * time.Minute)
+	defer sensorTicker.Stop()
+
+	// Positions need to be flushed more frequently than other sensors
+	// on abrupt changes of course or speed
+	positionTicker := time.NewTicker(10 * time.Second)
+	defer positionTicker.Stop()
 
 	buffers := &channels.BuffersSet{}
 	initializeBuffers(buffers)
@@ -36,8 +41,8 @@ func StartWriter(ctx context.Context, db *gorm.DB, channelsSet channels.Channels
 			writeNavtex(db, navtex)
 		case textNote := <-channelsSet.TextNoteCh:
 			writeTextNote(db, textNote)
-		case <-ticker.C:
-			if err := summarizeAndSave(buffers, db, diagnostics); err != nil {
+		case <-sensorTicker.C:
+			if err := summarizeAndSaveSensors(buffers, db, diagnostics); err != nil {
 				return err
 			}
 		}
@@ -52,9 +57,6 @@ func initializeBuffers(buffersSet *channels.BuffersSet) {
 	buffersSet.BatteryBuffer = make([]channels.BatteryMessage, 0, 100)
 	buffersSet.CompassBuffer = make([]channels.CompassMessage, 0, 100)
 	buffersSet.GPSBuffer = make([]gpsd.TPVReport, 0, 100)
-	buffersSet.NavtexBuffer = make([]string, 0, 100)
-	buffersSet.PositionBuffer = make([]channels.PositionMessage, 0, 100)
-	buffersSet.TextNoteBuffer = make([]string, 0, 100)
 }
 
 // clearBuffers clears the buffers and preallocates slices for sensor readouts
@@ -64,19 +66,27 @@ func clearBuffers(buffersSet *channels.BuffersSet) {
 	buffersSet.BatteryBuffer = buffersSet.BatteryBuffer[:0]
 	buffersSet.CompassBuffer = buffersSet.CompassBuffer[:0]
 	buffersSet.GPSBuffer = buffersSet.GPSBuffer[:0]
-	buffersSet.NavtexBuffer = buffersSet.NavtexBuffer[:0]
-	buffersSet.PositionBuffer = buffersSet.PositionBuffer[:0]
-	buffersSet.TextNoteBuffer = buffersSet.TextNoteBuffer[:0]
 }
 
 func writePosition(db *gorm.DB, position channels.PositionMessage) {
-	// TODO: implement
+	db.Create(&database.Position{
+		Timestamp: time.Now().Unix(),
+		SourceId:  2,
+		Latitude:  &position.Latitude,
+		Longitude: &position.Longitude,
+	})
 }
 
-func writeNavtex(db *gorm.DB, navtex string) {
-	// TODO: implement
+func writeNavtex(db *gorm.DB, message string) {
+	db.Create(&database.NavtexMessages{
+		Timestamp: time.Now().Unix(),
+		Text:      message,
+	})
 }
 
 func writeTextNote(db *gorm.DB, textNote string) {
-	// TODO: implement
+	db.Create(&database.TextNotes{
+		Timestamp: time.Now().Unix(),
+		Text:      textNote,
+	})
 }
