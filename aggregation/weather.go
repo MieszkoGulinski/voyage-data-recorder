@@ -5,7 +5,11 @@ import (
 	"datalogger/database"
 )
 
-func SummarizeWeather(messages []channels.WeatherMessage, ts int64) database.Weather {
+func SummarizeWeather(messages []channels.WeatherMessage, ts int64) *database.Weather {
+	if len(messages) == 0 {
+		return nil
+	}
+
 	weather := database.Weather{}
 	weather.Timestamp = ts
 
@@ -59,5 +63,5 @@ func SummarizeWeather(messages []channels.WeatherMessage, ts int64) database.Wea
 	// Note that water temperature does not come from WeatherMessage, but from MotorMessage, and needs to be
 	// added to the resulting struct separately
 
-	return weather
+	return &weather
 }

@@ -71,13 +71,13 @@ func (r BatteryStatus) GetTimestamp() int64 {
 }
 
 type MotorStatus struct {
-	Timestamp int64 `gorm:"column:timestamp;primaryKey" json:"timestamp"`
-	Temp1     int8  `gorm:"column:temp1_c" json:"temp1"`
-	Current1  int8  `gorm:"column:current1_a" json:"current1"`
-	Temp2     int8  `gorm:"column:temp2_c" json:"temp2"`
-	Current2  int8  `gorm:"column:current2_a" json:"current2"`
-	Pwm1      int8  `gorm:"column:pwm1" json:"pwm1"`
-	Pwm2      int8  `gorm:"column:pwm2" json:"pwm2"`
+	Timestamp    int64 `gorm:"column:timestamp;primaryKey" json:"timestamp"`
+	Temperature1 int8  `gorm:"column:temperature1_c" json:"temperature1"`
+	Current1     int8  `gorm:"column:current1_a" json:"current1"`
+	Temperature2 int8  `gorm:"column:temperature2_c" json:"temperature2"`
+	Current2     int8  `gorm:"column:current2_a" json:"current2"`
+	Pwm1         int8  `gorm:"column:pwm1" json:"pwm1"`
+	Pwm2         int8  `gorm:"column:pwm2" json:"pwm2"`
 }
 
 func (MotorStatus) TableName() string {
