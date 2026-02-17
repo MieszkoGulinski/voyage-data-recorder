@@ -56,6 +56,8 @@ func SummarizeWeather(messages []channels.WeatherMessage, ts int64) database.Wea
 	weather.Humidity = humidityAvg
 
 	// TODO other
+	// Note that water temperature does not come from WeatherMessage, but from MotorMessage, and needs to be
+	// added to the resulting struct separately
 
 	return weather
 }

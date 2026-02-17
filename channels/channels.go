@@ -61,6 +61,16 @@ type BatteryMessage struct {
 	Current *float32 // A
 }
 
+type MotorMessage struct {
+	Motor1Temp       *int8 // C
+	Motor1Current    *int8 // A
+	Motor2Temp       *int8 // C
+	Motor2Current    *int8 // A
+	Motor1PWM        *int8 // 1/128
+	Motor2PWM        *int8 // 1/128
+	WaterTemperature *int8 // C - note that it comes from the motor controller MCU, but it's saved to weather table in DB
+}
+
 // PositionMessage is used for manually added positions, not from GPS, and does not include course and speed information
 type PositionMessage struct {
 	Latitude  float64 `json:"lat"`

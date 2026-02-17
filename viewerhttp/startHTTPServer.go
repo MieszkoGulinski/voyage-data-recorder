@@ -43,7 +43,7 @@ func StartHTTPServer(db *gorm.DB, port int) {
 	// TODO write HTML renderer
 	r.Get("/api/weather", generateApiListHandler(db, &database.Weather{}))
 	r.Get("/api/positions", generateApiListHandler(db, &database.Position{}))
-	r.Get("/api/battery", generateApiListHandler(db, &database.Battery{}))
+	r.Get("/api/battery", generateApiListHandler(db, &database.BatteryStatus{}))
 
 	addr := fmt.Sprintf(":%d", port)
 	http.ListenAndServe(addr, r)

@@ -13,6 +13,8 @@ import (
 // Timestamp stores Unix timestamp in seconds.
 // GetTimestamp is needed in the queryWithPagination helper.
 
+// Use float64 for all floating point numbers.
+
 type Weather struct {
 	Timestamp             int64    `gorm:"column:timestamp;primaryKey" json:"timestamp"`
 	AirTemperature        *float64 `gorm:"column:air_temperature_c" json:"airTemperature"`
@@ -54,17 +56,35 @@ func (r Position) GetTimestamp() int64 {
 	return r.Timestamp
 }
 
-type Battery struct {
+type BatteryStatus struct {
 	Timestamp int64   `gorm:"column:timestamp;primaryKey" json:"timestamp"`
 	Charge    uint8   `gorm:"column:charge_percent" json:"charge"`
 	Voltage   float64 `gorm:"column:voltage_v" json:"voltage"`
 }
 
-func (Battery) TableName() string {
-	return "battery"
+func (BatteryStatus) TableName() string {
+	return "battery_status"
 }
 
-func (r Battery) GetTimestamp() int64 {
+func (r BatteryStatus) GetTimestamp() int64 {
+	return r.Timestamp
+}
+
+type MotorStatus struct {
+	Timestamp int64 `gorm:"column:timestamp;primaryKey" json:"timestamp"`
+	Temp1     int8  `gorm:"column:temp1_c" json:"temp1"`
+	Current1  int8  `gorm:"column:current1_a" json:"current1"`
+	Temp2     int8  `gorm:"column:temp2_c" json:"temp2"`
+	Current2  int8  `gorm:"column:current2_a" json:"current2"`
+	Pwm1      int8  `gorm:"column:pwm1" json:"pwm1"`
+	Pwm2      int8  `gorm:"column:pwm2" json:"pwm2"`
+}
+
+func (MotorStatus) TableName() string {
+	return "motor_status"
+}
+
+func (r MotorStatus) GetTimestamp() int64 {
 	return r.Timestamp
 }
 
@@ -94,8 +114,8 @@ func (r TextNotes) GetTimestamp() int64 {
 	return r.Timestamp
 }
 
-// More tables will come: GPS accuracy/status, electric motor status etc
+// More tables may come, e.g. GPS accuracy/status
 
 func RegenerateTables(db *gorm.DB) {
-	db.AutoMigrate(&Weather{}, &Position{}, &Battery{})
+	db.AutoMigrate(&Weather{}, &Position{}, &BatteryStatus{}, &MotorStatus{}, &NavtexMessages{}, &TextNotes{})
 }
