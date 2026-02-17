@@ -10,6 +10,7 @@ import (
 // for this reason these columns must be read using pointers.
 // Serializing them to JSON will convert them either to number or null.
 
+// Timestamp stores Unix timestamp in seconds.
 // GetTimestamp is needed in the queryWithPagination helper.
 
 type Weather struct {
@@ -17,6 +18,7 @@ type Weather struct {
 	AirTemperature        *float64 `gorm:"column:air_temperature_c" json:"airTemperature"`
 	WaterTemperature      *float64 `gorm:"column:water_temperature_c" json:"waterTemperature"`
 	Pressure              *float64 `gorm:"column:pressure_hpa" json:"pressure"`
+	Humidity              *uint8   `gorm:"column:humidity_percent" json:"humidity"`
 	ApparentWindDirection *uint8   `gorm:"column:apparent_wind_direction_rhumb" json:"apparentWindDirection"`
 	ApparentWindSpeed     *float64 `gorm:"column:apparent_wind_direction_speed_kt" json:"apparentWindSpeed"`
 	ApparentWindGustSpeed *float64 `gorm:"column:apparent_wind_direction_gust_speed_kt" json:"apparentWindGustSpeed"`
@@ -53,9 +55,9 @@ func (r Position) GetTimestamp() int64 {
 }
 
 type Battery struct {
-	Timestamp  int64   `gorm:"column:timestamp;primaryKey" json:"timestamp"`
-	Charge     uint8   `gorm:"column:charge_percent" json:"charge"`
-	Voltage    float64 `gorm:"column:voltage_v" json:"voltage"`
+	Timestamp int64   `gorm:"column:timestamp;primaryKey" json:"timestamp"`
+	Charge    uint8   `gorm:"column:charge_percent" json:"charge"`
+	Voltage   float64 `gorm:"column:voltage_v" json:"voltage"`
 }
 
 func (Battery) TableName() string {

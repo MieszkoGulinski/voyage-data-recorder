@@ -2,7 +2,7 @@ package listeners
 
 import (
 	"context"
-	"datalogger/writer"
+	"datalogger/channels"
 	"encoding/binary"
 	"fmt"
 
@@ -10,7 +10,7 @@ import (
 )
 
 // StartCANListener starts a CAN listener on the given interface and passes received frames to the appropriate channels.
-func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet writer.ChannelsSet) error {
+func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet channels.ChannelsSet) error {
 	if diagnostics {
 		fmt.Printf("CAN listener starting on interface %s\n", interfaceName)
 	}
@@ -51,7 +51,7 @@ func StartCANListener(ctx context.Context, interfaceName string, diagnostics boo
 //
 // Some values inside the CAN frame represent signed integers. Since bit operations are performed assuming
 // unsigned integers, we need to bit cast them to signed.
-func decodeCANFrame(frame can.Frame, channelsSet writer.ChannelsSet) error {
+func decodeCANFrame(frame can.Frame, channelsSet channels.ChannelsSet) error {
 	switch frame.ID {
 	case 0x050:
 		// Weather frame
@@ -65,7 +65,7 @@ func decodeCANFrame(frame can.Frame, channelsSet writer.ChannelsSet) error {
 		temperature := float32(temperatureRaw) / 10
 		pressure := float32(pressureRaw) / 10
 
-		channelsSet.WeatherCh <- writer.WeatherMessage{
+		channelsSet.WeatherCh <- channels.WeatherMessage{
 			Temperature:  &temperature,
 			Pressure:     &pressure,
 			AppWindSpeed: &appWindSpeed,
@@ -82,7 +82,7 @@ func decodeCANFrame(frame can.Frame, channelsSet writer.ChannelsSet) error {
 		voltage := float32(voltageRaw) / 100
 		current := float32(currentRaw) / 100
 
-		channelsSet.BatteryCh <- writer.BatteryMessage{
+		channelsSet.BatteryCh <- channels.BatteryMessage{
 			Charge:  &charge,
 			Voltage: &voltage,
 			Current: &current,
@@ -92,7 +92,7 @@ func decodeCANFrame(frame can.Frame, channelsSet writer.ChannelsSet) error {
 		heading := binary.BigEndian.Uint16(frame.Data[0:2])
 		// TODO more fields
 
-		channelsSet.CompassCh <- writer.CompassMessage{
+		channelsSet.CompassCh <- channels.CompassMessage{
 			Heading: &heading,
 		}
 	default:

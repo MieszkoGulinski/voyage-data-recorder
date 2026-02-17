@@ -2,13 +2,13 @@ package listeners
 
 import (
 	"context"
-	"datalogger/writer"
+	"datalogger/channels"
 	"fmt"
 
 	"github.com/stratoberry/go-gpsd"
 )
 
-func StartGPSListener(ctx context.Context, port int, diagnostics bool, channelsSet writer.ChannelsSet) error {
+func StartGPSListener(ctx context.Context, port int, diagnostics bool, channelsSet channels.ChannelsSet) error {
 	gps, err := gpsd.Dial(fmt.Sprintf("localhost:%d", port))
 	if err != nil {
 		return fmt.Errorf("Error setting up GPS listener on port %d: %w", port, err)

@@ -1,4 +1,4 @@
-package writer
+package channels
 
 import "github.com/stratoberry/go-gpsd"
 

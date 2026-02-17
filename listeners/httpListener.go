@@ -2,7 +2,7 @@ package listeners
 
 import (
 	"context"
-	"datalogger/writer"
+	"datalogger/channels"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,7 +15,7 @@ type MessageRequest struct {
 	Message string `json:"message"`
 }
 
-func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet writer.ChannelsSet) error {
+func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet channels.ChannelsSet) error {
 	r := chi.NewRouter()
 
 	// API route handlers
@@ -34,7 +34,7 @@ func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channels
 	})
 
 	r.Post("/position", func(w http.ResponseWriter, r *http.Request) {
-		var body writer.PositionMessage
+		var body channels.PositionMessage
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return

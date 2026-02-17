@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"datalogger/channels"
 	"datalogger/database"
 	"datalogger/listeners"
 	"datalogger/writer"
@@ -23,7 +24,7 @@ func main() {
 
 	g, ctx := errgroup.WithContext(context.Background())
 
-	channelsSet := writer.NewChannelsSet()
+	channelsSet := channels.NewChannelsSet()
 
 	g.Go(func() error {
 		return listeners.StartCANListener(ctx, *canInterfaceName, *diagnostics, channelsSet)
