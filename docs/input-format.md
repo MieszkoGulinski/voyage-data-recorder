@@ -61,3 +61,12 @@ API endpoints are:
 - POST `/text` - format: `{"message": "..."}`
 
 Position should be given in decimal degrees, with N/S and E/W indicated by sign (southern and western hemispheres are negative). This example is for position near Bali, Indonesia. Before sending the data to the writer process, it may be necessary to convert the position from another format, e.g. degrees and decimal minutes.
+
+## How to add a new sensor
+
+- In file `writer/channels.go`, add a new channel to the `ChannelsSet` struct
+- In file `listeners/canListener.go`, add a new handler for the new sensor
+- In file `writer/summarizer.go`, add a new summarizer for the new sensor
+- In file `database/db.go`, update the tables (or create a new table if needed) to include the new sensor
+- In file `viewerhttp/startHTTPServer.go`, add a new API endpoint for the new sensor
+- In file `viewer3270/getLogger3270ScreenContent.go`, add a new line for the new sensor

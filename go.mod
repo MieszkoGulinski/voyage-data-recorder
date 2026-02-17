@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi v1.5.5
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/racingmars/go3270 v0.9.11
+	github.com/stratoberry/go-gpsd v1.3.0
 	golang.org/x/sync v0.9.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.1
@@ -20,7 +21,6 @@ require (
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
-	github.com/stratoberry/go-gpsd v1.3.0 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.20.0 // indirect

@@ -57,7 +57,9 @@ func submitFrame(bus *can.Bus) error {
 	var humidity uint8 = 86     // 86%
 
 	// Form packet
-	binary.BigEndian.PutUint16(payload[0:2], uint16(temperature)) // int16 must be converted to uint16 to be saved to
+	// In places where value is in int16, it must be bit-casted to uint16
+	// as operations on bit arrays require unsigned integers
+	binary.BigEndian.PutUint16(payload[0:2], uint16(temperature))
 	binary.BigEndian.PutUint16(payload[2:4], pressure)
 	payload[4] = appWindSpeed
 	payload[5] = appWindDir

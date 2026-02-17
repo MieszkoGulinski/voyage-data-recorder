@@ -54,7 +54,7 @@ Receives messages sent over a HTTP API. This is intended to receive e.g.:
 
 - messages received by a [NAVTEX](https://en.wikipedia.org/wiki/NAVTEX) receiver - a soundcard-based receiver will be added later
 - manually entered geographical position, in case of GPS failure
-- custom text messages
+- text notes - this allows the crew to add any other type of information to the log
 
 See [here](./docs/input-format.md) for details of API.
 

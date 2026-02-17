@@ -57,7 +57,7 @@ func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channels
 			http.Error(w, "Message cannot be empty", http.StatusBadRequest)
 			return
 		}
-		channelsSet.TextMessageCh <- body.Message
+		channelsSet.TextNoteCh <- body.Message
 		w.WriteHeader(http.StatusOK)
 	})
 
