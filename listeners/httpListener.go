@@ -15,7 +15,7 @@ type MessageRequest struct {
 	Message string `json:"message"`
 }
 
-func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet *writer.ChannelsSet) error {
+func StartHTTPListener(ctx context.Context, port int, diagnostics bool, channelsSet writer.ChannelsSet) error {
 	r := chi.NewRouter()
 
 	// API route handlers

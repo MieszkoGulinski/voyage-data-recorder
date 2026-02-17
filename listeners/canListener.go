@@ -10,7 +10,7 @@ import (
 )
 
 // StartCANListener starts a CAN listener on the given interface and passes received frames to the appropriate channels.
-func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet *writer.ChannelsSet) error {
+func StartCANListener(ctx context.Context, interfaceName string, diagnostics bool, channelsSet writer.ChannelsSet) error {
 	if diagnostics {
 		fmt.Printf("CAN listener starting on interface %s\n", interfaceName)
 	}
@@ -51,23 +51,49 @@ func StartCANListener(ctx context.Context, interfaceName string, diagnostics boo
 //
 // Some values inside the CAN frame represent signed integers. Since bit operations are performed assuming
 // unsigned integers, we need to bit cast them to signed.
-func decodeCANFrame(frame can.Frame, channelsSet *writer.ChannelsSet) error {
+func decodeCANFrame(frame can.Frame, channelsSet writer.ChannelsSet) error {
 	switch frame.ID {
 	case 0x050:
 		// Weather frame
-		temperature := int16(binary.BigEndian.Uint16(frame.Data[0:2]))
-		pressure := binary.BigEndian.Uint16(frame.Data[2:4])
+		temperatureRaw := int16(binary.BigEndian.Uint16(frame.Data[0:2]))
+		pressureRaw := binary.BigEndian.Uint16(frame.Data[2:4])
 		appWindSpeed := frame.Data[4]
 		appWindDir := frame.Data[5]
 		humidity := frame.Data[6]
 		// TODO error bits from Data[7] - if any, set appropriate fields to nil
+
+		temperature := float32(temperatureRaw) / 10
+		pressure := float32(pressureRaw) / 10
+
 		channelsSet.WeatherCh <- writer.WeatherMessage{
-			Timestamp:    nil,
 			Temperature:  &temperature,
 			Pressure:     &pressure,
 			AppWindSpeed: &appWindSpeed,
 			AppWindDir:   &appWindDir,
 			Humidity:     &humidity,
+		}
+	case 0x056:
+		// Battery frame
+		charge := frame.Data[0]
+		voltageRaw := binary.BigEndian.Uint16(frame.Data[1:3])
+		currentRaw := int16(binary.BigEndian.Uint16(frame.Data[3:5]))
+		// TODO error bits from Data[7] - if any, set appropriate fields to nil
+
+		voltage := float32(voltageRaw) / 100
+		current := float32(currentRaw) / 100
+
+		channelsSet.BatteryCh <- writer.BatteryMessage{
+			Charge:  &charge,
+			Voltage: &voltage,
+			Current: &current,
+		}
+	case 0x052:
+		// Compass frame
+		heading := binary.BigEndian.Uint16(frame.Data[0:2])
+		// TODO more fields
+
+		channelsSet.CompassCh <- writer.CompassMessage{
+			Heading: &heading,
 		}
 	default:
 		// ignore unknown frame types

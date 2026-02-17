@@ -39,7 +39,7 @@ Writer process consists of the following concurrently running goroutines:
 - listens to data from sensors
 - decodes the data
 - checks if the data is valid (according to the status byte)
-- converts it to float
+- converts it to different types if appropriate (e.g. as temperature in CAN frame is encoded as int16 in multiples of 0.1 C, we convert it to float in C)
 - if the received data is valid, submits it to a buffered channel - there is one channel for each sensor type
 
 The reason for using a buffered channel is that the writer process reads data from the channel in chunks every 1 minute and summarizes them, and the sensor data is received approximately every second to several seconds.

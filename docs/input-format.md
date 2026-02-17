@@ -20,7 +20,7 @@ Bytes Format  Value                    Unit      Notes
 1     uint8   Humidity                 %
 1     -       Fault status             -         Individual bits indicate what sensors failed
 ---- ID=0x052 from magnetic compass ----
-2     uint16  Magnetic bearing         0.5 deg   Already corrected for tilt and for magnetic deviation
+2     uint16  Magnetic heading         0.5 deg   Already corrected for tilt and for magnetic deviation
 1     uint8   Magnetic inclination     0.5 deg   0-90 degrees
 1     uint8   Magnetic field strength  uT        If significantly more or less than Earth's field, it means magnetic interference
 1     -       Fault status             -         Individual bits indicate what sensors failed
